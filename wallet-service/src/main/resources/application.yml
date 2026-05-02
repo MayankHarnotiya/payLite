@@ -1,0 +1,42 @@
+# wallet-service/src/main/resources/application.yml
+# Configuration for the wallet-service Spring Boot application.
+
+server:
+  port: 8081                                      # service runs on http://localhost:8081
+
+spring:
+  application:
+    name: wallet-service
+
+  # Database connection — uses the Postgres running in Docker on port 5432
+  datasource:
+    url: jdbc:postgresql://localhost:5432/paylite_wallet
+    username: paylite
+    password: paylite_dev_password
+    driver-class-name: org.postgresql.Driver
+
+  # JPA / Hibernate settings
+  jpa:
+    hibernate:
+      ddl-auto: none                              # we'll use Flyway for migrations later
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true                          # pretty-print SQL in logs
+    show-sql: true                                # log every SQL statement (dev only)
+
+# Actuator — production-grade health checks and metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging — control verbosity per package
+logging:
+  level:
+    com.paylite: DEBUG                            # verbose logs from our own code
+    org.hibernate.SQL: DEBUG                      # see actual SQL queries
