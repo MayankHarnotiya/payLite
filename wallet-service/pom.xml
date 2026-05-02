@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =============================================================
+         INHERIT FROM OUR PARENT POM (paylite-parent at the repo root)
+         This child gets Java 17, Spring Boot 3.3.5, UTF-8 encoding,
+         and 200+ pre-locked dependency versions automatically.
+         ============================================================= -->
+    <parent>
+        <groupId>com.paylite</groupId>
+        <artifactId>paylite-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>wallet-service</artifactId>
+    <name>wallet-service</name>
+    <description>Wallet, transactions, and AI-insights service</description>
+
+    <!-- =============================================================
+         DEPENDENCIES — what our app needs to do its job
+         "Starter" packages bundle related libraries together.
+         No version numbers needed — parent locks them down for us.
+         ============================================================= -->
+    <dependencies>
+
+        <!-- REST APIs: brings Spring MVC + embedded Tomcat + Jackson JSON -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Database: brings JPA + Hibernate + connection pooling -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- PostgreSQL JDBC driver — the actual library that talks to Postgres -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- Validation: lets us use @NotNull, @Email, @Min etc. on our request DTOs -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Actuator: gives us /health, /metrics, /info endpoints automatically -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- Lombok: auto-generates getters/setters/constructors from annotations -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Test starter: bundles JUnit 5, Mockito, AssertJ, Spring Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- =============================================================
+         BUILD CONFIGURATION — the spring-boot-maven-plugin makes
+         our app packageable into a runnable "fat JAR" containing
+         everything (our code + Tomcat + all dependencies).
+         ============================================================= -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

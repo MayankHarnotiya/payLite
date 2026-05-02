@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =============================================================
+         INHERIT FROM SPRING BOOT'S OFFICIAL PARENT
+         This brings in version-locked combinations of 200+ libraries
+         that are guaranteed to play nicely together.
+         ============================================================= -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/>
+    </parent>
+
+    <!-- =============================================================
+         OUR PROJECT'S IDENTITY
+         groupId   = the company/project namespace (like a Java package)
+         artifactId = the name of this specific module
+         version   = SNAPSHOT means "in development, not released"
+         packaging = "pom" means this is a parent only, not a real JAR
+         ============================================================= -->
+    <groupId>com.paylite</groupId>
+    <artifactId>paylite-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>paylite-parent</name>
+    <description>PayLite — digital wallet platform (parent module)</description>
+
+    <!-- =============================================================
+         CHILD MODULES
+         Each entry here is a folder containing its own pom.xml.
+         We start with one (wallet-service); we'll add notification-service
+         in a few weeks.
+         ============================================================= -->
+    <modules>
+        <module>wallet-service</module>
+    </modules>
+
+    <!-- =============================================================
+         SHARED PROPERTIES
+         These get inherited by all children. Defining Java version here
+         means we don't need to repeat it in every child pom.
+         ============================================================= -->
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+</project>
