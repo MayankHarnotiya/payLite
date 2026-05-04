@@ -40,13 +40,11 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- PostgreSQL JDBC driver — the actual library that talks to Postgres -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
+        <!-- MySQL JDBC driver — the library that talks to MySQL -->        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
-
         <!-- Validation: lets us use @NotNull, @Email, @Min etc. on our request DTOs -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
