@@ -1,1 +1,12 @@
+com\paylite\wallet\controller\AuthController.class
+com\paylite\wallet\dto\SignupRequest$SignupRequestBuilder.class
+com\paylite\wallet\dto\UserResponse$UserResponseBuilder.class
+com\paylite\wallet\dto\UserResponse.class
+com\paylite\wallet\repository\UserRepository.class
+com\paylite\wallet\service\UserService.class
+com\paylite\wallet\entity\User.class
+com\paylite\wallet\entity\User$UserBuilder.class
+com\paylite\wallet\config\SecurityConfig.class
+com\paylite\wallet\dto\SignupRequest.class
+com\paylite\wallet\exception\EmailAlreadyExistsException.class
 com\paylite\wallet\WalletApplication.class
