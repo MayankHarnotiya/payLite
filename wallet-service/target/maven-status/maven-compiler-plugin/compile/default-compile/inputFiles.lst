@@ -1,9 +1,11 @@
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\config\SecurityConfig.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\controller\AuthController.java
+C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\ErrorResponse.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\SignupRequest.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\UserResponse.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\entity\User.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\exception\EmailAlreadyExistsException.java
+C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\exception\GlobalExceptionHandler.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\repository\UserRepository.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\service\UserService.java
 C:\Users\mayan\payLite\wallet-service\src\main\java\com\paylite\wallet\WalletApplication.java
