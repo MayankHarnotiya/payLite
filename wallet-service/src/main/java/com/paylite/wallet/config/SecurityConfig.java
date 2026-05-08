@@ -1,64 +1,72 @@
 package com.paylite.wallet.config;
 
+import com.paylite.wallet.security.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security configuration for PayLite.
  *
  * Strategy:
  *   - Stateless (no HTTP sessions) — REST APIs use JWT instead.
- *   - Public endpoints listed explicitly: /api/auth/** and /actuator/health.
+ *   - Public endpoints: /api/auth/** and /actuator/**.
  *   - Every other endpoint requires authentication.
- *
- * In Day 5 we'll add a JWT filter that, on every request:
- *   1. Reads the Authorization: Bearer <token> header
- *   2. Validates the token's signature
- *   3. Extracts the user's identity and attaches it to the SecurityContext
- *
- * For now (no JWT yet) the protected endpoints aren't reachable —
- * but that's fine because we don't have any protected endpoints yet either.
+ *   - Our JwtAuthenticationFilter runs BEFORE Spring's
+ *     UsernamePasswordAuthenticationFilter to populate SecurityContext from JWT.
  */
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // CSRF protection is for browser sessions with cookies.
-                // We're stateless + token-based, so we disable it.
+                // CSRF is for browser sessions with cookies. Stateless REST APIs don't need it.
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Tell Spring Security: don't create HTTP sessions.
-                // Each request must carry its own credentials (later: JWT).
+                // No HTTP sessions. Each request must carry its own credentials (JWT).
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // The actual URL rules — order matters: most specific first.
+                // URL rules — order matters: most specific first.
                 .authorizeHttpRequests(auth -> auth
-                        // Auth endpoints (signup, login) — public. Anyone can hit them.
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // Health checks — public so monitoring tools can poll without credentials.
                         .requestMatchers(HttpMethod.GET, "/actuator/health").permitAll()
-
-                        // Other actuator endpoints (metrics, info) — admin only in real life.
-                        // For now, permit them too. We'll lock down in production.
                         .requestMatchers("/actuator/**").permitAll()
-
-                        // Everything else — must be authenticated.
                         .anyRequest().authenticated()
-                );
+                )
+
+                // Insert our JWT filter BEFORE Spring's username/password filter,
+                // so SecurityContext is populated from JWT before any other auth check.
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * Expose AuthenticationManager as a bean.
+     * Required by AuthService at login time to verify email + password.
+     * Spring builds this internally based on our CustomUserDetailsService + PasswordEncoder.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
     }
 
     @Bean

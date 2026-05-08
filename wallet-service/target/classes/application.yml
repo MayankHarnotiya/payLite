@@ -35,3 +35,9 @@ logging:
   level:
     com.paylite: DEBUG
     org.hibernate.SQL: DEBUG
+
+paylite:
+  jwt:
+    secret: Tqk6ZTIA+54x7c9lf/Sl/io2Sfl54qUgtn+30uKnRH9e3+0krLZbozJP6EcXjr3HggSbgmgXY1nGPoHVdMbs/w==
+    expiration-ms: 900000   # 15 minutes (15 * 60 * 1000)
+    issuer: paylite-wallet-service

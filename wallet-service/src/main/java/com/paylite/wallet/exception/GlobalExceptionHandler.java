@@ -82,6 +82,53 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles missing request body (e.g., POST /api/auth/signup with no JSON).
+     * Spring throws HttpMessageNotReadableException for these.
+     * Returns HTTP 400 Bad Request — the client sent malformed input.
+     */
+    @ExceptionHandler(org.springframework.http.converter.HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMissingOrBadBody(
+            org.springframework.http.converter.HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        log.warn("Bad request body at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message("Request body is missing or malformed JSON")
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    /**
+     * Handles requests to non-existent endpoints (no controller matches the URL).
+     * Spring 6.1+ throws NoResourceFoundException for these — without this handler,
+     * the catch-all returns a misleading 500.
+     * Returns proper HTTP 404 Not Found.
+     */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(
+            org.springframework.web.servlet.resource.NoResourceFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn("No endpoint mapped for {} {}", request.getMethod(), request.getRequestURI());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message("The requested resource was not found")
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    /**
      * Catch-all for any exception not handled by a more specific handler above.
      * Returns HTTP 500 with a generic message — never leak stack traces or
      * internal class names to clients. The full exception is logged for ops to investigate.
@@ -103,5 +150,31 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.internalServerError().body(response);
+    }
+
+    /**
+     * Handles login failures — wrong email, wrong password, or any other
+     * AuthenticationException that AuthService re-wraps as InvalidCredentialsException.
+     * Returns HTTP 401 Unauthorized.
+     *
+     * Response message is deliberately vague ("Invalid email or password")
+     * to avoid leaking whether the email exists.
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(
+            InvalidCredentialsException ex,
+            HttpServletRequest request) {
+
+        log.warn("Login rejected at {}", request.getRequestURI());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }
