@@ -3,8 +3,10 @@ package com.paylite.wallet.service;
 import com.paylite.wallet.dto.SignupRequest;
 import com.paylite.wallet.dto.UserResponse;
 import com.paylite.wallet.entity.User;
+import com.paylite.wallet.entity.Wallet;
 import com.paylite.wallet.exception.EmailAlreadyExistsException;
 import com.paylite.wallet.repository.UserRepository;
+import com.paylite.wallet.repository.WalletRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,29 +15,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+
 /**
  * Business logic for user-related operations: signup, lookup, etc.
  *
- * This class knows nothing about HTTP. It receives DTOs, returns DTOs,
- * uses the repository for persistence, and the password encoder for hashing.
- * The same code could be invoked from a REST controller, a Kafka consumer,
- * a scheduled job, or a test — all without modification.
+ * On signup: also auto-creates a Wallet for the new user, atomically.
+ * @Transactional ensures both INSERTs commit together or both roll back —
+ * we never have a user without a wallet.
  */
-@Service                                // Marks this as a Spring-managed business component
-@RequiredArgsConstructor                // Lombok: generates constructor for all `final` fields → enables constructor injection
-@Slf4j                                  // Lombok: gives us a `log` field for SLF4J logging
+@Service
+@RequiredArgsConstructor
+@Slf4j
 public class UserService {
 
     private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Sign up a new user.
-     *
-     * @param request validated input from the signup endpoint
-     * @return UserResponse with generated id and timestamps; never includes password
-     * @throws EmailAlreadyExistsException if the email is already registered
-     */
     @Transactional
     public UserResponse signup(SignupRequest request) {
         log.info("Signup attempt for email={}", request.getEmail());
@@ -46,12 +43,10 @@ public class UserService {
             throw new EmailAlreadyExistsException(request.getEmail());
         }
 
-        // 2. Hash the password BEFORE building the entity.
-        //    Plain password never reaches the DB.
+        // 2. Hash the password before building the entity
         String hashedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 3. Build the entity from the DTO. Notice id and timestamps are NOT set —
-        //    @GeneratedValue picks the id, @CreationTimestamp picks createdAt.
+        // 3. Build and save the user
         User user = User.builder()
                 .email(request.getEmail())
                 .passwordHash(hashedPassword)
@@ -59,12 +54,20 @@ public class UserService {
                 .phone(request.getPhone())
                 .build();
 
-        // 4. Persist. Returns the saved entity with the generated id and createdAt populated.
         User savedUser = userRepository.save(user);
 
-        log.info("User signed up successfully: id={} email={}", savedUser.getId(), savedUser.getEmail());
+        // 4. Auto-create the user's wallet — starts at zero balance.
+        //    If THIS fails, the user INSERT in step 3 rolls back too (same transaction).
+        Wallet wallet = Wallet.builder()
+                .user(savedUser)
+                .balance(BigDecimal.ZERO)
+                .build();
 
-        // 5. Convert entity to response DTO. The hash is dropped here at the boundary.
+        walletRepository.save(wallet);
+
+        log.info("User and wallet created: userId={} email={}", savedUser.getId(), savedUser.getEmail());
+
+        // 5. Return response (UserResponse doesn't include wallet info; that's a separate endpoint)
         return UserResponse.from(savedUser);
     }
 }

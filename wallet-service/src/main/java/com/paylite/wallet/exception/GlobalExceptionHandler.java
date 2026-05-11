@@ -128,6 +128,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 
+
+    /**
+     * Handles missing wallets. Should be rare — every authenticated user should
+     * have a wallet (auto-created at signup). Returns HTTP 404 Not Found.
+     */
+    @ExceptionHandler(WalletNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWalletNotFound(
+            WalletNotFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn("Wallet not found at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
     /**
      * Catch-all for any exception not handled by a more specific handler above.
      * Returns HTTP 500 with a generic message — never leak stack traces or
