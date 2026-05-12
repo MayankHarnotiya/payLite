@@ -108,6 +108,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Spring Data Redis — for idempotency key caching with TTL -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
     </dependencies>
 
     <!-- =============================================================
