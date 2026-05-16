@@ -127,7 +127,110 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+    /**
+     * Returns 400 Bad Request when the sender's balance is too low for the transfer.
+     */
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientBalance(
+            InsufficientBalanceException ex,
+            HttpServletRequest request) {
 
+        log.warn("Insufficient balance at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    /**
+     * Returns 400 Bad Request when sender tries to send money to themselves.
+     */
+    @ExceptionHandler(SelfTransferException.class)
+    public ResponseEntity<ErrorResponse> handleSelfTransfer(
+            SelfTransferException ex,
+            HttpServletRequest request) {
+
+        log.warn("Self-transfer attempt at {}", request.getRequestURI());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    /**
+     * Returns 400 Bad Request when Idempotency-Key header is missing on a transfer.
+     */
+    @ExceptionHandler(IdempotencyKeyMissingException.class)
+    public ResponseEntity<ErrorResponse> handleIdempotencyKeyMissing(
+            IdempotencyKeyMissingException ex,
+            HttpServletRequest request) {
+
+        log.warn("Idempotency-Key missing at {}", request.getRequestURI());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    /**
+     * Returns 409 Conflict when a duplicate Idempotency-Key request is in flight.
+     */
+    @ExceptionHandler(ConcurrentRetryException.class)
+    public ResponseEntity<ErrorResponse> handleConcurrentRetry(
+            ConcurrentRetryException ex,
+            HttpServletRequest request) {
+
+        log.warn("Concurrent retry detected at {}", request.getRequestURI());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error(HttpStatus.CONFLICT.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    /**
+     * Returns 404 Not Found when the recipient email doesn't match any registered user.
+     */
+    @ExceptionHandler(RecipientNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleRecipientNotFound(
+            RecipientNotFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn("Recipient not found at {}: {}", request.getRequestURI(), ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 
     /**
      * Handles missing wallets. Should be rare — every authenticated user should
