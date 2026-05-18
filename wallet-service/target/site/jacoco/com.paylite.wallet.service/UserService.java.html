@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.service</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.service;
+
+import com.paylite.wallet.dto.SignupRequest;
+import com.paylite.wallet.dto.UserResponse;
+import com.paylite.wallet.entity.User;
+import com.paylite.wallet.entity.Wallet;
+import com.paylite.wallet.exception.EmailAlreadyExistsException;
+import com.paylite.wallet.repository.UserRepository;
+import com.paylite.wallet.repository.WalletRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+
+/**
+ * Business logic for user-related operations: signup, lookup, etc.
+ *
+ * On signup: also auto-creates a Wallet for the new user, atomically.
+ * @Transactional ensures both INSERTs commit together or both roll back —
+ * we never have a user without a wallet.
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L29">@Slf4j</span>
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final WalletRepository walletRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public UserResponse signup(SignupRequest request) {
+<span class="fc" id="L38">        log.info(&quot;Signup attempt for email={}&quot;, request.getEmail());</span>
+
+        // 1. Business rule: email must be unique
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (userRepository.existsByEmail(request.getEmail())) {</span>
+<span class="fc" id="L42">            log.warn(&quot;Signup rejected — email already exists: {}&quot;, request.getEmail());</span>
+<span class="fc" id="L43">            throw new EmailAlreadyExistsException(request.getEmail());</span>
+        }
+
+        // 2. Hash the password before building the entity
+<span class="fc" id="L47">        String hashedPassword = passwordEncoder.encode(request.getPassword());</span>
+
+        // 3. Build and save the user
+<span class="fc" id="L50">        User user = User.builder()</span>
+<span class="fc" id="L51">                .email(request.getEmail())</span>
+<span class="fc" id="L52">                .passwordHash(hashedPassword)</span>
+<span class="fc" id="L53">                .fullName(request.getFullName())</span>
+<span class="fc" id="L54">                .phone(request.getPhone())</span>
+<span class="fc" id="L55">                .build();</span>
+
+<span class="fc" id="L57">        User savedUser = userRepository.save(user);</span>
+
+        // 4. Auto-create the user's wallet — starts at zero balance.
+        //    If THIS fails, the user INSERT in step 3 rolls back too (same transaction).
+<span class="fc" id="L61">        Wallet wallet = Wallet.builder()</span>
+<span class="fc" id="L62">                .user(savedUser)</span>
+<span class="fc" id="L63">                .balance(BigDecimal.ZERO)</span>
+<span class="fc" id="L64">                .build();</span>
+
+<span class="fc" id="L66">        walletRepository.save(wallet);</span>
+
+<span class="fc" id="L68">        log.info(&quot;User and wallet created: userId={} email={}&quot;, savedUser.getId(), savedUser.getEmail());</span>
+
+        // 5. Return response (UserResponse doesn't include wallet info; that's a separate endpoint)
+<span class="fc" id="L71">        return UserResponse.from(savedUser);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

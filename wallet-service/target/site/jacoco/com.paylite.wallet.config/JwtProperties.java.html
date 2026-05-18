@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JwtProperties.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.config</a> &gt; <span class="el_source">JwtProperties.java</span></div><h1>JwtProperties.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.config;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
+
+/**
+ * Type-safe binding of paylite.jwt.* properties from application.yml.
+ *
+ * Spring scans for @ConfigurationProperties and auto-populates the fields
+ * from matching YAML keys. Usage in any service:
+ *   private final JwtProperties jwtProperties;
+ *   String secret = jwtProperties.getSecret();
+ *
+ * Cleaner than scattering @Value(&quot;${paylite.jwt.secret}&quot;) strings everywhere.
+ */
+@Component
+@ConfigurationProperties(prefix = &quot;paylite.jwt&quot;)
+@Getter
+@Setter
+<span class="nc" id="L23">public class JwtProperties {</span>
+
+    /** Base64-encoded HMAC-SHA256 secret. Must be ≥256 bits (32 bytes). */
+    private String secret;
+
+    /** Access token validity in milliseconds. */
+    private long expirationMs;
+
+    /** Issuer claim — the service that issued the token. */
+    private String issuer;
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

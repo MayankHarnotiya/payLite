@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SelfTransferException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.exception</a> &gt; <span class="el_source">SelfTransferException.java</span></div><h1>SelfTransferException.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.exception;
+
+/**
+ * Thrown when a user tries to transfer money to themselves.
+ * Maps to HTTP 400 Bad Request.
+ *
+ * Why guard against this? It would be a no-op accounting-wise (debit and credit
+ * the same wallet) but would still:
+ *   - waste resources (DB roundtrips, transaction log entries)
+ *   - confuse users seeing &quot;I sent money to myself&quot; in their history
+ *   - potentially exploit a race condition involving optimistic locking
+ */
+public class SelfTransferException extends RuntimeException {
+
+    public SelfTransferException() {
+<span class="fc" id="L16">        super(&quot;Cannot transfer money to yourself&quot;);</span>
+<span class="fc" id="L17">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IdempotencyService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.service</a> &gt; <span class="el_source">IdempotencyService.java</span></div><h1>IdempotencyService.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.service;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.paylite.wallet.exception.ConcurrentRetryException;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
+import java.time.Duration;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+/**
+ * Generic idempotency mechanism using Redis SET NX EX.
+ *
+ * The claim-or-retry pattern:
+ *   1. Try to atomically claim a key with status &quot;PENDING&quot;.
+ *   2. If claim succeeds → we are the first request. Execute the operation,
+ *      cache the response (overwrite PENDING), and return.
+ *   3. If claim fails → another request owns the key. Read what's there:
+ *        - &quot;PENDING&quot;  → first request still running. Throw ConcurrentRetryException.
+ *        - JSON       → first request completed. Return the cached response.
+ *
+ * Why Redis? Sub-ms lookups, automatic TTL cleanup, and atomic SET NX guarantees.
+ * The DB has a UNIQUE constraint on idempotency_key as a last-line defense.
+ *
+ * Note: this service is RESPONSE-TYPE-AGNOSTIC. It serializes/deserializes
+ * responses via Jackson, so any DTO can be cached.
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L36">@Slf4j</span>
+public class IdempotencyService {
+
+    private static final String KEY_PREFIX = &quot;idempotency:&quot;;
+    private static final String PENDING_MARKER = &quot;PENDING&quot;;
+<span class="fc" id="L41">    private static final Duration TTL = Duration.ofHours(24);</span>
+
+    private final StringRedisTemplate redis;
+    private final ObjectMapper objectMapper;
+
+    /**
+     * Execute an operation idempotently.
+     *
+     * @param idempotencyKey  client-supplied unique key
+     * @param responseType    the expected response type (for deserializing cached responses)
+     * @param operation       the actual work to perform (only runs on first request)
+     * @return either a fresh response or the cached response from a prior request
+     */
+    public &lt;T&gt; T executeIdempotent(
+            String idempotencyKey,
+            Class&lt;T&gt; responseType,
+            Supplier&lt;T&gt; operation) {
+
+<span class="nc" id="L59">        String redisKey = KEY_PREFIX + idempotencyKey;</span>
+
+        // Step 1: Try to atomically claim the key.
+<span class="nc" id="L62">        Boolean claimed = redis.opsForValue().setIfAbsent(redisKey, PENDING_MARKER, TTL);</span>
+
+        // setIfAbsent returns Boolean (can be null in rare connection errors); handle defensively
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (Boolean.TRUE.equals(claimed)) {</span>
+<span class="nc" id="L66">            log.debug(&quot;Idempotency key claimed: {}&quot;, idempotencyKey);</span>
+
+            T response;
+            try {
+                // We're the first. Execute the actual operation.
+<span class="nc" id="L71">                response = operation.get();</span>
+<span class="nc" id="L72">            } catch (RuntimeException ex) {</span>
+                // On any failure, DELETE the PENDING marker so retries can proceed cleanly.
+                // Otherwise the retry would see &quot;PENDING&quot; forever (until TTL expires).
+<span class="nc" id="L75">                log.warn(&quot;Operation failed, releasing idempotency claim: {}&quot;, idempotencyKey);</span>
+<span class="nc" id="L76">                redis.delete(redisKey);</span>
+<span class="nc" id="L77">                throw ex;</span>
+<span class="nc" id="L78">            }</span>
+
+            // Operation succeeded. Cache the serialized response (overwrite PENDING).
+<span class="nc" id="L81">            String serialized = serialize(response);</span>
+<span class="nc" id="L82">            redis.opsForValue().set(redisKey, serialized, TTL);</span>
+<span class="nc" id="L83">            log.debug(&quot;Cached response for idempotency key: {}&quot;, idempotencyKey);</span>
+
+<span class="nc" id="L85">            return response;</span>
+        }
+
+        // Step 2: Key already exists. Inspect what's cached.
+<span class="nc" id="L89">        return handleExistingKey(redisKey, idempotencyKey, responseType, operation);</span>
+    }
+
+    private &lt;T&gt; T handleExistingKey(
+            String redisKey,
+            String idempotencyKey,
+            Class&lt;T&gt; responseType,
+            Supplier&lt;T&gt; operation) {
+
+<span class="nc" id="L98">        String cached = redis.opsForValue().get(redisKey);</span>
+
+<span class="nc bnc" id="L100" title="All 2 branches missed.">        if (cached == null) {</span>
+            // Race: key expired between setIfAbsent (which saw it exists) and get (which saw it gone).
+            // Extremely rare. Fall through to a fresh claim attempt.
+<span class="nc" id="L103">            log.warn(&quot;Idempotency key expired between claim and read; retrying: {}&quot;, idempotencyKey);</span>
+<span class="nc" id="L104">            return executeIdempotent(idempotencyKey, responseType, operation);</span>
+        }
+
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (PENDING_MARKER.equals(cached)) {</span>
+            // Another request is still processing. Tell the client to retry shortly.
+<span class="nc" id="L109">            log.warn(&quot;Concurrent retry for idempotency key still in PENDING state: {}&quot;, idempotencyKey);</span>
+<span class="nc" id="L110">            throw new ConcurrentRetryException();</span>
+        }
+
+        // We have a previously-cached completed response. Deserialize and return it.
+<span class="nc" id="L114">        log.debug(&quot;Returning cached idempotent response for key: {}&quot;, idempotencyKey);</span>
+<span class="nc" id="L115">        return deserialize(cached, responseType);</span>
+    }
+
+    /**
+     * Look up a previously-cached response without consuming the slot.
+     * Useful if a caller wants to peek before committing to executeIdempotent.
+     */
+    public &lt;T&gt; Optional&lt;T&gt; getCachedResponse(String idempotencyKey, Class&lt;T&gt; responseType) {
+<span class="nc" id="L123">        String cached = redis.opsForValue().get(KEY_PREFIX + idempotencyKey);</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">        if (cached == null || PENDING_MARKER.equals(cached)) {</span>
+<span class="nc" id="L125">            return Optional.empty();</span>
+        }
+<span class="nc" id="L127">        return Optional.of(deserialize(cached, responseType));</span>
+    }
+
+    private &lt;T&gt; String serialize(T value) {
+        try {
+<span class="nc" id="L132">            return objectMapper.writeValueAsString(value);</span>
+<span class="nc" id="L133">        } catch (JsonProcessingException ex) {</span>
+<span class="nc" id="L134">            throw new IllegalStateException(&quot;Failed to serialize idempotency response&quot;, ex);</span>
+        }
+    }
+
+    private &lt;T&gt; T deserialize(String json, Class&lt;T&gt; type) {
+        try {
+<span class="nc" id="L140">            return objectMapper.readValue(json, type);</span>
+<span class="nc" id="L141">        } catch (JsonProcessingException ex) {</span>
+<span class="nc" id="L142">            throw new IllegalStateException(&quot;Failed to deserialize cached idempotency response&quot;, ex);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.config;
+
+import com.paylite.wallet.security.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+/**
+ * Spring Security configuration for PayLite.
+ *
+ * Strategy:
+ *   - Stateless (no HTTP sessions) — REST APIs use JWT instead.
+ *   - Public endpoints: /api/auth/** and /actuator/**.
+ *   - Every other endpoint requires authentication.
+ *   - Our JwtAuthenticationFilter runs BEFORE Spring's
+ *     UsernamePasswordAuthenticationFilter to populate SecurityContext from JWT.
+ */
+@Configuration
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+<span class="nc" id="L38">        http</span>
+                // CSRF is for browser sessions with cookies. Stateless REST APIs don't need it.
+<span class="nc" id="L40">                .csrf(AbstractHttpConfigurer::disable)</span>
+
+                // No HTTP sessions. Each request must carry its own credentials (JWT).
+<span class="nc" id="L43">                .sessionManagement(session -&gt; session</span>
+<span class="nc" id="L44">                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+                )
+
+                // URL rules — order matters: most specific first.
+<span class="nc" id="L48">                .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="nc" id="L49">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="nc" id="L50">                        .requestMatchers(HttpMethod.GET, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="nc" id="L51">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
+<span class="nc" id="L52">                        .anyRequest().authenticated()</span>
+                )
+
+                // Insert our JWT filter BEFORE Spring's username/password filter,
+                // so SecurityContext is populated from JWT before any other auth check.
+<span class="nc" id="L57">                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
+
+<span class="nc" id="L59">        return http.build();</span>
+    }
+
+    /**
+     * Expose AuthenticationManager as a bean.
+     * Required by AuthService at login time to verify email + password.
+     * Spring builds this internally based on our CustomUserDetailsService + PasswordEncoder.
+     */
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+<span class="nc" id="L69">        return config.getAuthenticationManager();</span>
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="nc" id="L74">        return new BCryptPasswordEncoder();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

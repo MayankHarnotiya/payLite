@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConcurrentRetryException.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.exception</a> &gt; <span class="el_source">ConcurrentRetryException.java</span></div><h1>ConcurrentRetryException.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.exception;
+
+/**
+ * Thrown when a request arrives with an Idempotency-Key that's currently being
+ * processed by another request. The first request has claimed the key but
+ * hasn't completed yet.
+ *
+ * Maps to HTTP 409 Conflict — the client should wait briefly and retry.
+ * The Retry-After header could be added in production.
+ *
+ * This race is rare in practice (would require sub-second simultaneous clicks)
+ * but handling it cleanly demonstrates production-grade concurrency thinking.
+ */
+public class ConcurrentRetryException extends RuntimeException {
+
+    public ConcurrentRetryException() {
+<span class="nc" id="L17">        super(&quot;A request with this Idempotency-Key is currently being processed. Please retry shortly.&quot;);</span>
+<span class="nc" id="L18">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
