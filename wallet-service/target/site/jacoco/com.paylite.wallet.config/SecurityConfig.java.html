@@ -35,28 +35,28 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-<span class="nc" id="L38">        http</span>
+<span class="fc" id="L38">        http</span>
                 // CSRF is for browser sessions with cookies. Stateless REST APIs don't need it.
-<span class="nc" id="L40">                .csrf(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L40">                .csrf(AbstractHttpConfigurer::disable)</span>
 
                 // No HTTP sessions. Each request must carry its own credentials (JWT).
-<span class="nc" id="L43">                .sessionManagement(session -&gt; session</span>
-<span class="nc" id="L44">                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+<span class="fc" id="L43">                .sessionManagement(session -&gt; session</span>
+<span class="fc" id="L44">                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
                 )
 
                 // URL rules — order matters: most specific first.
-<span class="nc" id="L48">                .authorizeHttpRequests(auth -&gt; auth</span>
-<span class="nc" id="L49">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
-<span class="nc" id="L50">                        .requestMatchers(HttpMethod.GET, &quot;/actuator/health&quot;).permitAll()</span>
-<span class="nc" id="L51">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
-<span class="nc" id="L52">                        .anyRequest().authenticated()</span>
+<span class="fc" id="L48">                .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L49">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="fc" id="L50">                        .requestMatchers(HttpMethod.GET, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L51">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
+<span class="fc" id="L52">                        .anyRequest().authenticated()</span>
                 )
 
                 // Insert our JWT filter BEFORE Spring's username/password filter,
                 // so SecurityContext is populated from JWT before any other auth check.
-<span class="nc" id="L57">                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
+<span class="fc" id="L57">                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
 
-<span class="nc" id="L59">        return http.build();</span>
+<span class="fc" id="L59">        return http.build();</span>
     }
 
     /**
@@ -66,12 +66,12 @@ public class SecurityConfig {
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-<span class="nc" id="L69">        return config.getAuthenticationManager();</span>
+<span class="fc" id="L69">        return config.getAuthenticationManager();</span>
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-<span class="nc" id="L74">        return new BCryptPasswordEncoder();</span>
+<span class="fc" id="L74">        return new BCryptPasswordEncoder();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

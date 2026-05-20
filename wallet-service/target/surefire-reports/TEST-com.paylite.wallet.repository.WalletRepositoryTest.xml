@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.paylite.wallet.service.WalletServiceTest" time="0.052" tests="5" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.paylite.wallet.repository.WalletRepositoryTest" time="11.729" tests="3" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -63,28 +63,56 @@
     <property name="java.class.version" value="61.0"/>
     <property name="LOGGED_APPLICATION_NAME" value="[wallet-service] "/>
   </properties>
-  <testcase name="shouldCreditWalletPreservingDecimalPrecision" classname="com.paylite.wallet.service.WalletServiceTest" time="0.016">
-    <system-out><![CDATA[2026-05-20T22:49:17.224+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Credit attempt: email=user@paylite.com amount=250.50
-2026-05-20T22:49:17.226+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Wallet credited: email=user@paylite.com newBalance=350.50
+  <testcase name="shouldFindWalletByUserEmail" classname="com.paylite.wallet.repository.WalletRepositoryTest" time="1.071">
+    <system-out><![CDATA[22:49:04.547 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.paylite.wallet.repository.WalletRepositoryTest]: WalletRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+22:49:04.950 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.paylite.wallet.WalletApplication for test class com.paylite.wallet.repository.WalletRepositoryTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-05-20T22:49:06.249+05:30  INFO 19364 --- [wallet-service] [           main] c.p.w.repository.WalletRepositoryTest    : Starting WalletRepositoryTest using Java 17.0.12 with PID 19364 (started by mayan in E:\payLite\wallet-service)
+2026-05-20T22:49:06.251+05:30 DEBUG 19364 --- [wallet-service] [           main] c.p.w.repository.WalletRepositoryTest    : Running with Spring Boot v3.3.5, Spring v6.1.14
+2026-05-20T22:49:06.253+05:30  INFO 19364 --- [wallet-service] [           main] c.p.w.repository.WalletRepositoryTest    : The following 1 profile is active: "test"
+2026-05-20T22:49:07.189+05:30  INFO 19364 --- [wallet-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-05-20T22:49:07.195+05:30  INFO 19364 --- [wallet-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-05-20T22:49:07.676+05:30  INFO 19364 --- [wallet-service] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 456 ms. Found 3 JPA repository interfaces.
+2026-05-20T22:49:08.736+05:30  INFO 19364 --- [wallet-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-05-20T22:49:09.173+05:30  INFO 19364 --- [wallet-service] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@6415112c
+2026-05-20T22:49:09.178+05:30  INFO 19364 --- [wallet-service] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-05-20T22:49:09.304+05:30  INFO 19364 --- [wallet-service] [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:mysql://localhost:3307/paylite_wallet (MySQL 8.0)
+2026-05-20T22:49:09.503+05:30  INFO 19364 --- [wallet-service] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 3 migrations (execution time 00:00.113s)
+2026-05-20T22:49:09.541+05:30  INFO 19364 --- [wallet-service] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema `paylite_wallet`: 3
+2026-05-20T22:49:09.549+05:30  INFO 19364 --- [wallet-service] [           main] o.f.core.internal.command.DbMigrate      : Schema `paylite_wallet` is up to date. No migration necessary.
+2026-05-20T22:49:09.732+05:30  INFO 19364 --- [wallet-service] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-05-20T22:49:09.904+05:30  INFO 19364 --- [wallet-service] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-05-20T22:49:10.004+05:30  INFO 19364 --- [wallet-service] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-05-20T22:49:10.718+05:30  INFO 19364 --- [wallet-service] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-05-20T22:49:10.852+05:30  WARN 19364 --- [wallet-service] [           main] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-05-20T22:49:12.852+05:30  INFO 19364 --- [wallet-service] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-05-20T22:49:12.946+05:30  INFO 19364 --- [wallet-service] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-05-20T22:49:13.710+05:30  INFO 19364 --- [wallet-service] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-05-20T22:49:14.595+05:30  INFO 19364 --- [wallet-service] [           main] c.p.w.repository.WalletRepositoryTest    : Started WalletRepositoryTest in 9.463 seconds (process running for 12.027)
+Hibernate: insert into users (created_at,email,full_name,password_hash,phone,updated_at) values (?,?,?,?,?,?)
+Hibernate: insert into wallets (balance,created_at,updated_at,user_id,version) values (?,?,?,?,?)
+Hibernate: select w1_0.id,w1_0.balance,w1_0.created_at,w1_0.updated_at,w1_0.user_id,w1_0.version from wallets w1_0 left join users u1_0 on u1_0.id=w1_0.user_id where u1_0.email=?
 ]]></system-out>
   </testcase>
-  <testcase name="shouldAccumulateMultipleCredits" classname="com.paylite.wallet.service.WalletServiceTest" time="0.004">
-    <system-out><![CDATA[2026-05-20T22:49:17.238+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Credit attempt: email=user@paylite.com amount=50.25
-2026-05-20T22:49:17.240+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Wallet credited: email=user@paylite.com newBalance=150.25
-2026-05-20T22:49:17.240+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Credit attempt: email=user@paylite.com amount=49.75
-2026-05-20T22:49:17.240+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Wallet credited: email=user@paylite.com newBalance=200.00
+  <testcase name="dbRejectsNegativeBalance" classname="com.paylite.wallet.repository.WalletRepositoryTest" time="0.06">
+    <system-out><![CDATA[Hibernate: insert into users (created_at,email,full_name,password_hash,phone,updated_at) values (?,?,?,?,?,?)
+Hibernate: insert into wallets (balance,created_at,updated_at,user_id,version) values (?,?,?,?,?)
+Hibernate: update wallets set balance=?,updated_at=?,user_id=?,version=? where id=? and version=?
+2026-05-20T22:49:15.730+05:30  WARN 19364 --- [wallet-service] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : SQL Error: 3819, SQLState: HY000
+2026-05-20T22:49:15.730+05:30 ERROR 19364 --- [wallet-service] [           main] o.h.engine.jdbc.spi.SqlExceptionHelper   : Check constraint 'chk_wallets_balance_nonneg' is violated.
 ]]></system-out>
   </testcase>
-  <testcase name="shouldThrowWhenWalletNotFound" classname="com.paylite.wallet.service.WalletServiceTest" time="0.006">
-    <system-out><![CDATA[2026-05-20T22:49:17.244+05:30 DEBUG 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Fetching wallet for email=ghost@paylite.com
-]]></system-out>
-  </testcase>
-  <testcase name="shouldThrowWhenAddingToMissingWallet" classname="com.paylite.wallet.service.WalletServiceTest" time="0.004">
-    <system-out><![CDATA[2026-05-20T22:49:17.252+05:30  INFO 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Credit attempt: email=ghost@paylite.com amount=100.00
-]]></system-out>
-  </testcase>
-  <testcase name="shouldReturnWalletDetailsForExistingUser" classname="com.paylite.wallet.service.WalletServiceTest" time="0.01">
-    <system-out><![CDATA[2026-05-20T22:49:17.260+05:30 DEBUG 19364 --- [wallet-service] [           main] c.paylite.wallet.service.WalletService   : Fetching wallet for email=user@paylite.com
+  <testcase name="shouldReturnEmptyForUnknownEmail" classname="com.paylite.wallet.repository.WalletRepositoryTest" time="0.016">
+    <system-out><![CDATA[Hibernate: select w1_0.id,w1_0.balance,w1_0.created_at,w1_0.updated_at,w1_0.user_id,w1_0.version from wallets w1_0 left join users u1_0 on u1_0.id=w1_0.user_id where u1_0.email=?
 ]]></system-out>
   </testcase>
 </testsuite>

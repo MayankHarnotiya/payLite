@@ -35,7 +35,7 @@ import java.time.Instant;
  */
 @Service
 @RequiredArgsConstructor
-<span class="nc" id="L38">@Slf4j</span>
+<span class="fc" id="L38">@Slf4j</span>
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
@@ -44,14 +44,14 @@ public class AuthService {
     private final UserRepository userRepository;
 
     public AuthResponse login(LoginRequest request) {
-<span class="nc" id="L47">        log.info(&quot;Login attempt for email={}&quot;, request.getEmail());</span>
+<span class="fc" id="L47">        log.info(&quot;Login attempt for email={}&quot;, request.getEmail());</span>
 
         // 1. Verify email + password via Spring's machinery
         try {
-<span class="nc" id="L51">            authenticationManager.authenticate(</span>
+<span class="fc" id="L51">            authenticationManager.authenticate(</span>
                     new UsernamePasswordAuthenticationToken(
-<span class="nc" id="L53">                            request.getEmail(),</span>
-<span class="nc" id="L54">                            request.getPassword()</span>
+<span class="fc" id="L53">                            request.getEmail(),</span>
+<span class="fc" id="L54">                            request.getPassword()</span>
                     )
             );
 <span class="nc" id="L57">        } catch (AuthenticationException ex) {</span>
@@ -59,27 +59,27 @@ public class AuthService {
             // We treat all auth failures uniformly to avoid leaking which case it was.
 <span class="nc" id="L60">            log.warn(&quot;Login failed for email={}: {}&quot;, request.getEmail(), ex.getClass().getSimpleName());</span>
 <span class="nc" id="L61">            throw new InvalidCredentialsException();</span>
-<span class="nc" id="L62">        }</span>
+<span class="fc" id="L62">        }</span>
 
         // 2. Credentials are valid. Load the User entity for the response.
         // Safe to assume the user exists at this point — AuthenticationManager just confirmed it.
-<span class="nc" id="L66">        User user = userRepository.findByEmail(request.getEmail())</span>
-<span class="nc" id="L67">                .orElseThrow(() -&gt; new IllegalStateException(</span>
+<span class="fc" id="L66">        User user = userRepository.findByEmail(request.getEmail())</span>
+<span class="pc" id="L67">                .orElseThrow(() -&gt; new IllegalStateException(</span>
                         &quot;User authenticated but not found in DB — race condition?&quot;));
 
         // 3. Generate the JWT
-<span class="nc" id="L71">        String token = jwtService.generateToken(user.getEmail());</span>
-<span class="nc" id="L72">        Instant expiresAt = Instant.now().plusMillis(jwtProperties.getExpirationMs());</span>
+<span class="fc" id="L71">        String token = jwtService.generateToken(user.getEmail());</span>
+<span class="fc" id="L72">        Instant expiresAt = Instant.now().plusMillis(jwtProperties.getExpirationMs());</span>
 
-<span class="nc" id="L74">        log.info(&quot;Login successful for email={}&quot;, user.getEmail());</span>
+<span class="fc" id="L74">        log.info(&quot;Login successful for email={}&quot;, user.getEmail());</span>
 
         // 4. Build and return the response
-<span class="nc" id="L77">        return AuthResponse.builder()</span>
-<span class="nc" id="L78">                .accessToken(token)</span>
-<span class="nc" id="L79">                .tokenType(&quot;Bearer&quot;)</span>
-<span class="nc" id="L80">                .expiresAt(expiresAt)</span>
-<span class="nc" id="L81">                .user(UserResponse.from(user))</span>
-<span class="nc" id="L82">                .build();</span>
+<span class="fc" id="L77">        return AuthResponse.builder()</span>
+<span class="fc" id="L78">                .accessToken(token)</span>
+<span class="fc" id="L79">                .tokenType(&quot;Bearer&quot;)</span>
+<span class="fc" id="L80">                .expiresAt(expiresAt)</span>
+<span class="fc" id="L81">                .user(UserResponse.from(user))</span>
+<span class="fc" id="L82">                .build();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

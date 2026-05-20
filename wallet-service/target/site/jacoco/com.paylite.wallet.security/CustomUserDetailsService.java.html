@@ -26,32 +26,32 @@ import java.util.Collections;
  */
 @Service
 @RequiredArgsConstructor
-<span class="nc" id="L29">@Slf4j</span>
+<span class="fc" id="L29">@Slf4j</span>
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-<span class="nc" id="L36">        log.debug(&quot;Looking up user by email: {}&quot;, email);</span>
+<span class="fc" id="L36">        log.debug(&quot;Looking up user by email: {}&quot;, email);</span>
 
         // Find our app's User entity from MySQL
-<span class="nc" id="L39">        User user = userRepository.findByEmail(email)</span>
-<span class="nc" id="L40">                .orElseThrow(() -&gt; {</span>
+<span class="fc" id="L39">        User user = userRepository.findByEmail(email)</span>
+<span class="fc" id="L40">                .orElseThrow(() -&gt; {</span>
 <span class="nc" id="L41">                    log.warn(&quot;User not found: {}&quot;, email);</span>
 <span class="nc" id="L42">                    return new UsernameNotFoundException(&quot;User not found: &quot; + email);</span>
                 });
 
         // Wrap in Spring's UserDetails (different class, same name as ours)
-<span class="nc" id="L46">        return org.springframework.security.core.userdetails.User.builder()</span>
-<span class="nc" id="L47">                .username(user.getEmail())              // Spring's &quot;username&quot; = our email</span>
-<span class="nc" id="L48">                .password(user.getPasswordHash())       // BCrypt hash from DB</span>
-<span class="nc" id="L49">                .authorities(Collections.emptyList())   // No roles yet — add USER, ADMIN later</span>
-<span class="nc" id="L50">                .accountExpired(false)</span>
-<span class="nc" id="L51">                .accountLocked(false)</span>
-<span class="nc" id="L52">                .credentialsExpired(false)</span>
-<span class="nc" id="L53">                .disabled(false)</span>
-<span class="nc" id="L54">                .build();</span>
+<span class="fc" id="L46">        return org.springframework.security.core.userdetails.User.builder()</span>
+<span class="fc" id="L47">                .username(user.getEmail())              // Spring's &quot;username&quot; = our email</span>
+<span class="fc" id="L48">                .password(user.getPasswordHash())       // BCrypt hash from DB</span>
+<span class="fc" id="L49">                .authorities(Collections.emptyList())   // No roles yet — add USER, ADMIN later</span>
+<span class="fc" id="L50">                .accountExpired(false)</span>
+<span class="fc" id="L51">                .accountLocked(false)</span>
+<span class="fc" id="L52">                .credentialsExpired(false)</span>
+<span class="fc" id="L53">                .disabled(false)</span>
+<span class="fc" id="L54">                .build();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

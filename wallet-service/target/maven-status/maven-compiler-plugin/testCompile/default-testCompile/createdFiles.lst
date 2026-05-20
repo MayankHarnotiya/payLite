@@ -1,3 +1,6 @@
-com\paylite\wallet\service\TransferServiceTest.class
-com\paylite\wallet\service\UserServiceTest.class
+com\paylite\wallet\AbstractIntegrationTest.class
 com\paylite\wallet\service\WalletServiceTest.class
+com\paylite\wallet\TransferIntegrationTest.class
+com\paylite\wallet\service\UserServiceTest.class
+com\paylite\wallet\service\TransferServiceTest.class
+com\paylite\wallet\repository\WalletRepositoryTest.class

@@ -31,7 +31,7 @@ import java.io.IOException;
  */
 @Component
 @RequiredArgsConstructor
-<span class="nc" id="L34">@Slf4j</span>
+<span class="fc" id="L34">@Slf4j</span>
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String AUTH_HEADER = &quot;Authorization&quot;;
@@ -47,55 +47,55 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain chain) throws ServletException, IOException {
 
         // 1. Try to extract the token from the Authorization header
-<span class="nc" id="L50">        String token = extractToken(request);</span>
+<span class="fc" id="L50">        String token = extractToken(request);</span>
 
         // 2. If no token OR token already authenticated, just pass through
-<span class="nc bnc" id="L53" title="All 4 branches missed.">        if (token == null || SecurityContextHolder.getContext().getAuthentication() != null) {</span>
-<span class="nc" id="L54">            chain.doFilter(request, response);</span>
-<span class="nc" id="L55">            return;</span>
+<span class="pc bpc" id="L53" title="1 of 4 branches missed.">        if (token == null || SecurityContextHolder.getContext().getAuthentication() != null) {</span>
+<span class="fc" id="L54">            chain.doFilter(request, response);</span>
+<span class="fc" id="L55">            return;</span>
         }
 
         // 3. Validate the token and extract the email
-<span class="nc" id="L59">        jwtService.extractEmail(token).ifPresent(email -&gt; {</span>
+<span class="fc" id="L59">        jwtService.extractEmail(token).ifPresent(email -&gt; {</span>
             try {
                 // 4. Load the user details from DB
-<span class="nc" id="L62">                UserDetails userDetails = userDetailsService.loadUserByUsername(email);</span>
+<span class="fc" id="L62">                UserDetails userDetails = userDetailsService.loadUserByUsername(email);</span>
 
                 // 5. Build the authentication object Spring needs
-<span class="nc" id="L65">                UsernamePasswordAuthenticationToken auth =</span>
+<span class="fc" id="L65">                UsernamePasswordAuthenticationToken auth =</span>
                         new UsernamePasswordAuthenticationToken(
                                 userDetails,
                                 null,                              // credentials = null (we already verified via JWT)
-<span class="nc" id="L69">                                userDetails.getAuthorities()       // roles/permissions</span>
+<span class="fc" id="L69">                                userDetails.getAuthorities()       // roles/permissions</span>
                         );
 
                 // Attach extra metadata: remote IP, session ID, etc.
-<span class="nc" id="L73">                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</span>
+<span class="fc" id="L73">                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));</span>
 
                 // 6. Set in SecurityContext for the duration of this request
-<span class="nc" id="L76">                SecurityContextHolder.getContext().setAuthentication(auth);</span>
-<span class="nc" id="L77">                log.debug(&quot;Authenticated user via JWT: {}&quot;, email);</span>
+<span class="fc" id="L76">                SecurityContextHolder.getContext().setAuthentication(auth);</span>
+<span class="fc" id="L77">                log.debug(&quot;Authenticated user via JWT: {}&quot;, email);</span>
 
 <span class="nc" id="L79">            } catch (Exception ex) {</span>
 <span class="nc" id="L80">                log.warn(&quot;Failed to authenticate user from JWT: {}&quot;, ex.getMessage());</span>
                 // Fall through — request continues unauthenticated
-<span class="nc" id="L82">            }</span>
-<span class="nc" id="L83">        });</span>
+<span class="fc" id="L82">            }</span>
+<span class="fc" id="L83">        });</span>
 
         // 7. Always continue the chain — auth rules in SecurityConfig decide what happens next
-<span class="nc" id="L86">        chain.doFilter(request, response);</span>
-<span class="nc" id="L87">    }</span>
+<span class="fc" id="L86">        chain.doFilter(request, response);</span>
+<span class="fc" id="L87">    }</span>
 
     /**
      * Extracts the raw token from &quot;Authorization: Bearer &lt;token&gt;&quot;.
      * Returns null if header is missing or malformed.
      */
     private String extractToken(HttpServletRequest request) {
-<span class="nc" id="L94">        String header = request.getHeader(AUTH_HEADER);</span>
-<span class="nc bnc" id="L95" title="All 4 branches missed.">        if (header != null &amp;&amp; header.startsWith(BEARER_PREFIX)) {</span>
-<span class="nc" id="L96">            return header.substring(BEARER_PREFIX.length());</span>
+<span class="fc" id="L94">        String header = request.getHeader(AUTH_HEADER);</span>
+<span class="pc bpc" id="L95" title="1 of 4 branches missed.">        if (header != null &amp;&amp; header.startsWith(BEARER_PREFIX)) {</span>
+<span class="fc" id="L96">            return header.substring(BEARER_PREFIX.length());</span>
         }
-<span class="nc" id="L98">        return null;</span>
+<span class="fc" id="L98">        return null;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

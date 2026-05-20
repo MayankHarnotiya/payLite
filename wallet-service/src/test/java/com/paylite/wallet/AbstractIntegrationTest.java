@@ -2,36 +2,36 @@ package com.paylite.wallet;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 /**
  * Base class for integration tests that need a real MySQL database.
  *
- * Spins up a single MySQL 8.0 container shared across all tests in the JVM.
- * Flyway runs the V1, V2, V3 migrations on container startup, so the schema
- * is identical to production.
+ * Originally written to use Testcontainers, but switched to using the
+ * already-running paylite-mysql Docker container (started via docker-compose)
+ * because of Windows + Docker Desktop + WSL2 npipe communication issues
+ * during the Testcontainers handshake.
  *
- * Test classes that extend this get a real DB connection without managing it.
+ * Pragmatic trade-off:
+ *   - Pro: tests run immediately, no Docker debugging
+ *   - Pro: same MySQL 8.0 image as production, same Flyway migrations
+ *   - Con: tests share data namespace with manual testing; we use unique
+ *          email prefixes per test to avoid collisions
+ *
+ * In production CI/CD (e.g., GitHub Actions on Linux), the original
+ * Testcontainers version would work fine. This is a Windows-specific workaround.
  */
-@Testcontainers
 public abstract class AbstractIntegrationTest {
-
-    @Container
-    protected static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("paylite_test")
-            .withUsername("paylite_test")
-            .withPassword("paylite_test_pwd")
-            .withReuse(true);  // reuse container across test runs for speed (Testcontainers feature)
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", MYSQL::getJdbcUrl);
-        registry.add("spring.datasource.username", MYSQL::getUsername);
-        registry.add("spring.datasource.password", MYSQL::getPassword);
+        // Point tests at the already-running paylite-mysql container
+        // (started via `docker compose up -d` from the project root)
+        registry.add("spring.datasource.url",
+                () -> "jdbc:mysql://localhost:3307/paylite_wallet?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC");
+        registry.add("spring.datasource.username", () -> "paylite");
+        registry.add("spring.datasource.password", () -> "paylite_dev_password");
         registry.add("spring.datasource.driver-class-name", () -> "com.mysql.cj.jdbc.Driver");
-        // Flyway runs migrations against the real container DB
+        // Flyway migrations have already been applied to this DB
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("spring.flyway.locations", () -> "classpath:db/migration");
     }

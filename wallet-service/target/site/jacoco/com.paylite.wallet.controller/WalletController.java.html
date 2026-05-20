@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(&quot;/api/wallets&quot;)
 @RequiredArgsConstructor
-<span class="nc" id="L35">@Slf4j</span>
+<span class="fc" id="L35">@Slf4j</span>
 public class WalletController {
 
     private final WalletService walletService;
@@ -56,9 +56,9 @@ public class WalletController {
             @AuthenticationPrincipal UserDetails user,
             @Valid @RequestBody AddMoneyRequest request) {
 
-<span class="nc" id="L59">        log.debug(&quot;POST /api/wallets/add-money for email={} amount={}&quot;,</span>
-<span class="nc" id="L60">                user.getUsername(), request.getAmount());</span>
-<span class="nc" id="L61">        return walletService.addMoney(user.getUsername(), request);</span>
+<span class="fc" id="L59">        log.debug(&quot;POST /api/wallets/add-money for email={} amount={}&quot;,</span>
+<span class="fc" id="L60">                user.getUsername(), request.getAmount());</span>
+<span class="fc" id="L61">        return walletService.addMoney(user.getUsername(), request);</span>
     }
 
     /**
@@ -81,15 +81,15 @@ public class WalletController {
         // Validate header presence ourselves so we can return a clean error.
         // (Using required=true would return Spring's generic 400 &quot;Missing header&quot; message;
         //  required=false + manual check lets us throw our own exception with our envelope.)
-<span class="nc bnc" id="L84" title="All 4 branches missed.">        if (idempotencyKey == null || idempotencyKey.isBlank()) {</span>
+<span class="pc bpc" id="L84" title="2 of 4 branches missed.">        if (idempotencyKey == null || idempotencyKey.isBlank()) {</span>
 <span class="nc" id="L85">            throw new IdempotencyKeyMissingException();</span>
         }
 
-<span class="nc" id="L88">        log.debug(&quot;POST /api/wallets/transfer sender={} recipient={} amount={} idempotencyKey={}&quot;,</span>
-<span class="nc" id="L89">                sender.getUsername(), request.getRecipientEmail(),</span>
-<span class="nc" id="L90">                request.getAmount(), idempotencyKey);</span>
+<span class="fc" id="L88">        log.debug(&quot;POST /api/wallets/transfer sender={} recipient={} amount={} idempotencyKey={}&quot;,</span>
+<span class="fc" id="L89">                sender.getUsername(), request.getRecipientEmail(),</span>
+<span class="fc" id="L90">                request.getAmount(), idempotencyKey);</span>
 
-<span class="nc" id="L92">        return transferService.transfer(idempotencyKey, sender.getUsername(), request);</span>
+<span class="fc" id="L92">        return transferService.transfer(idempotencyKey, sender.getUsername(), request);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
