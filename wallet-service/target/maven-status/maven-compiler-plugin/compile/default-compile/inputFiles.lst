@@ -7,6 +7,8 @@ E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\AuthResponse.java
 E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\ErrorResponse.java
 E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\LoginRequest.java
 E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\SignupRequest.java
+E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\TransactionHistoryResponse.java
+E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\TransactionItemResponse.java
 E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\TransferRequest.java
 E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\TransferResponse.java
 E:\payLite\wallet-service\src\main\java\com\paylite\wallet\dto\UserResponse.java

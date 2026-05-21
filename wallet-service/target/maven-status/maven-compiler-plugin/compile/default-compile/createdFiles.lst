@@ -7,6 +7,7 @@ com\paylite\wallet\security\JwtAuthenticationFilter.class
 com\paylite\wallet\dto\AuthResponse.class
 com\paylite\wallet\exception\IdempotencyKeyMissingException.class
 com\paylite\wallet\entity\Wallet$WalletBuilder.class
+com\paylite\wallet\dto\TransactionHistoryResponse.class
 com\paylite\wallet\controller\WalletController.class
 com\paylite\wallet\security\JwtService.class
 com\paylite\wallet\exception\SelfTransferException.class
@@ -22,15 +23,18 @@ com\paylite\wallet\dto\AddMoneyRequest$AddMoneyRequestBuilder.class
 com\paylite\wallet\exception\InvalidCredentialsException.class
 com\paylite\wallet\dto\LoginRequest$LoginRequestBuilder.class
 com\paylite\wallet\dto\AddMoneyRequest.class
+com\paylite\wallet\dto\TransactionItemResponse$TransactionItemResponseBuilder.class
 com\paylite\wallet\dto\AuthResponse$AuthResponseBuilder.class
 com\paylite\wallet\security\CustomUserDetailsService.class
 com\paylite\wallet\dto\TransferResponse$TransferResponseBuilder.class
 com\paylite\wallet\exception\ConcurrentRetryException.class
 com\paylite\wallet\repository\TransactionRepository.class
 com\paylite\wallet\dto\WalletResponse$WalletResponseBuilder.class
+com\paylite\wallet\dto\TransactionHistoryResponse$TransactionHistoryResponseBuilder.class
 com\paylite\wallet\entity\Transaction$TransactionBuilder.class
 com\paylite\wallet\repository\WalletRepository.class
 com\paylite\wallet\exception\EmailAlreadyExistsException.class
+com\paylite\wallet\dto\TransactionItemResponse.class
 com\paylite\wallet\controller\AuthController.class
 com\paylite\wallet\service\AuthService.class
 com\paylite\wallet\dto\SignupRequest$SignupRequestBuilder.class

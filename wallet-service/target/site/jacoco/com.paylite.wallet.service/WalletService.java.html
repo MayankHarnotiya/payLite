@@ -1,18 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WalletService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.service</a> &gt; <span class="el_source">WalletService.java</span></div><h1>WalletService.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.service;
 
 import com.paylite.wallet.dto.AddMoneyRequest;
+import com.paylite.wallet.dto.TransactionHistoryResponse;
+import com.paylite.wallet.dto.TransactionItemResponse;
 import com.paylite.wallet.dto.WalletResponse;
+import com.paylite.wallet.entity.Transaction;
+import com.paylite.wallet.entity.User;
 import com.paylite.wallet.entity.Wallet;
 import com.paylite.wallet.exception.WalletNotFoundException;
+import com.paylite.wallet.repository.TransactionRepository;
+import com.paylite.wallet.repository.UserRepository;
 import com.paylite.wallet.repository.WalletRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Business logic for wallet operations.
@@ -22,22 +33,24 @@ import java.math.BigDecimal;
  */
 @Service
 @RequiredArgsConstructor
-<span class="fc" id="L25">@Slf4j</span>
+<span class="fc" id="L36">@Slf4j</span>
 public class WalletService {
 
     private final WalletRepository walletRepository;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
     /**
      * Read the current user's wallet. Read-only transaction = small Hibernate perf boost.
      */
     @Transactional(readOnly = true)
     public WalletResponse getWalletByEmail(String email) {
-<span class="fc" id="L35">        log.debug(&quot;Fetching wallet for email={}&quot;, email);</span>
+<span class="fc" id="L48">        log.debug(&quot;Fetching wallet for email={}&quot;, email);</span>
 
-<span class="fc" id="L37">        Wallet wallet = walletRepository.findByUserEmail(email)</span>
-<span class="fc" id="L38">                .orElseThrow(() -&gt; new WalletNotFoundException(email));</span>
+<span class="fc" id="L50">        Wallet wallet = walletRepository.findByUserEmail(email)</span>
+<span class="fc" id="L51">                .orElseThrow(() -&gt; new WalletNotFoundException(email));</span>
 
-<span class="fc" id="L40">        return toResponse(wallet);</span>
+<span class="fc" id="L53">        return toResponse(wallet);</span>
     }
 
     /**
@@ -51,23 +64,55 @@ public class WalletService {
      *      WHERE id=? AND version=? (optimistic lock check)
      *
      * If another transaction modified this wallet in parallel, the version check
-     * would fail → OptimisticLockException. We'll handle that gracefully in Day 7.
+     * would fail → OptimisticLockException.
      */
     @Transactional
     public WalletResponse addMoney(String email, AddMoneyRequest request) {
-<span class="fc" id="L58">        log.info(&quot;Credit attempt: email={} amount={}&quot;, email, request.getAmount());</span>
+<span class="fc" id="L71">        log.info(&quot;Credit attempt: email={} amount={}&quot;, email, request.getAmount());</span>
 
-<span class="fc" id="L60">        Wallet wallet = walletRepository.findByUserEmail(email)</span>
-<span class="fc" id="L61">                .orElseThrow(() -&gt; new WalletNotFoundException(email));</span>
+<span class="fc" id="L73">        Wallet wallet = walletRepository.findByUserEmail(email)</span>
+<span class="fc" id="L74">                .orElseThrow(() -&gt; new WalletNotFoundException(email));</span>
 
-<span class="fc" id="L63">        BigDecimal newBalance = wallet.getBalance().add(request.getAmount());</span>
-<span class="fc" id="L64">        wallet.setBalance(newBalance);</span>
+<span class="fc" id="L76">        BigDecimal newBalance = wallet.getBalance().add(request.getAmount());</span>
+<span class="fc" id="L77">        wallet.setBalance(newBalance);</span>
 
         // No explicit save() needed — within a @Transactional method, JPA's &quot;dirty checking&quot;
         // detects the change and issues UPDATE at commit time.
 
-<span class="fc" id="L69">        log.info(&quot;Wallet credited: email={} newBalance={}&quot;, email, newBalance);</span>
-<span class="fc" id="L70">        return toResponse(wallet);</span>
+<span class="fc" id="L82">        log.info(&quot;Wallet credited: email={} newBalance={}&quot;, email, newBalance);</span>
+<span class="fc" id="L83">        return toResponse(wallet);</span>
+    }
+
+    /**
+     * Returns the paginated transaction history for the given user.
+     * Includes both sent and received transactions, newest first.
+     *
+     * The findUserHistory query uses JOIN FETCH on sender + recipient
+     * to avoid N+1 queries when building the response DTOs.
+     */
+    @Transactional(readOnly = true)
+    public TransactionHistoryResponse getTransactionHistory(String email, int page, int size) {
+<span class="nc" id="L95">        log.info(&quot;Fetching transaction history: email={} page={} size={}&quot;, email, page, size);</span>
+
+<span class="nc" id="L97">        User user = userRepository.findByEmail(email)</span>
+<span class="nc" id="L98">                .orElseThrow(() -&gt; new WalletNotFoundException(email));</span>
+
+<span class="nc" id="L100">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, &quot;createdAt&quot;));</span>
+<span class="nc" id="L101">        Page&lt;Transaction&gt; txnPage = transactionRepository.findUserHistory(user, pageable);</span>
+
+<span class="nc" id="L103">        List&lt;TransactionItemResponse&gt; items = txnPage.getContent().stream()</span>
+<span class="nc" id="L104">                .map(txn -&gt; TransactionItemResponse.from(txn, user))</span>
+<span class="nc" id="L105">                .toList();</span>
+
+<span class="nc" id="L107">        log.info(&quot;Transaction history fetched: email={} totalElements={}&quot;, email, txnPage.getTotalElements());</span>
+
+<span class="nc" id="L109">        return TransactionHistoryResponse.builder()</span>
+<span class="nc" id="L110">                .content(items)</span>
+<span class="nc" id="L111">                .page(txnPage.getNumber())</span>
+<span class="nc" id="L112">                .size(txnPage.getSize())</span>
+<span class="nc" id="L113">                .totalElements(txnPage.getTotalElements())</span>
+<span class="nc" id="L114">                .totalPages(txnPage.getTotalPages())</span>
+<span class="nc" id="L115">                .build();</span>
     }
 
     /**
@@ -75,11 +120,11 @@ public class WalletService {
      * Centralized so we don't repeat the mapping in both getWallet and addMoney.
      */
     private WalletResponse toResponse(Wallet wallet) {
-<span class="fc" id="L78">        return WalletResponse.builder()</span>
-<span class="fc" id="L79">                .balance(wallet.getBalance())</span>
-<span class="fc" id="L80">                .currency(&quot;INR&quot;)</span>
-<span class="fc" id="L81">                .lastUpdated(wallet.getUpdatedAt())</span>
-<span class="fc" id="L82">                .build();</span>
+<span class="fc" id="L123">        return WalletResponse.builder()</span>
+<span class="fc" id="L124">                .balance(wallet.getBalance())</span>
+<span class="fc" id="L125">                .currency(&quot;INR&quot;)</span>
+<span class="fc" id="L126">                .lastUpdated(wallet.getUpdatedAt())</span>
+<span class="fc" id="L127">                .build();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

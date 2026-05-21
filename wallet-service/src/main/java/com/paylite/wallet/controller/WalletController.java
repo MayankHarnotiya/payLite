@@ -1,6 +1,7 @@
 package com.paylite.wallet.controller;
 
 import com.paylite.wallet.dto.AddMoneyRequest;
+import com.paylite.wallet.dto.TransactionHistoryResponse;
 import com.paylite.wallet.dto.TransferRequest;
 import com.paylite.wallet.dto.TransferResponse;
 import com.paylite.wallet.dto.WalletResponse;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -45,6 +48,31 @@ public class WalletController {
     public WalletResponse getMyWallet(@AuthenticationPrincipal UserDetails user) {
         log.debug("GET /api/wallets/me for email={}", user.getUsername());
         return walletService.getWalletByEmail(user.getUsername());
+    }
+
+    /**
+     * GET /api/wallets/me/transactions — paginated transaction history.
+     *
+     * Returns all transfers involving the current user (sent + received),
+     * newest first. Each item shows SENT/RECEIVED relative to the caller.
+     *
+     * Query params:
+     *   page — zero-indexed page number (default 0)
+     *   size — items per page (default 20)
+     */
+    @GetMapping("/me/transactions")
+    public ResponseEntity<TransactionHistoryResponse> getTransactionHistory(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        log.debug("GET /api/wallets/me/transactions for email={} page={} size={}",
+                userDetails.getUsername(), page, size);
+
+        TransactionHistoryResponse history = walletService.getTransactionHistory(
+                userDetails.getUsername(), page, size);
+
+        return ResponseEntity.ok(history);
     }
 
     /**
@@ -78,9 +106,6 @@ public class WalletController {
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey,
             @Valid @RequestBody TransferRequest request) {
 
-        // Validate header presence ourselves so we can return a clean error.
-        // (Using required=true would return Spring's generic 400 "Missing header" message;
-        //  required=false + manual check lets us throw our own exception with our envelope.)
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             throw new IdempotencyKeyMissingException();
         }

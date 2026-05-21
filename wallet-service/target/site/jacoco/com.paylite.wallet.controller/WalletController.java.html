@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WalletController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">wallet-service</a> &gt; <a href="index.source.html" class="el_package">com.paylite.wallet.controller</a> &gt; <span class="el_source">WalletController.java</span></div><h1>WalletController.java</h1><pre class="source lang-java linenums">package com.paylite.wallet.controller;
 
 import com.paylite.wallet.dto.AddMoneyRequest;
+import com.paylite.wallet.dto.TransactionHistoryResponse;
 import com.paylite.wallet.dto.TransferRequest;
 import com.paylite.wallet.dto.TransferResponse;
 import com.paylite.wallet.dto.WalletResponse;
@@ -13,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -32,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(&quot;/api/wallets&quot;)
 @RequiredArgsConstructor
-<span class="fc" id="L35">@Slf4j</span>
+<span class="fc" id="L38">@Slf4j</span>
 public class WalletController {
 
     private final WalletService walletService;
@@ -43,8 +46,33 @@ public class WalletController {
      */
     @GetMapping(&quot;/me&quot;)
     public WalletResponse getMyWallet(@AuthenticationPrincipal UserDetails user) {
-<span class="nc" id="L46">        log.debug(&quot;GET /api/wallets/me for email={}&quot;, user.getUsername());</span>
-<span class="nc" id="L47">        return walletService.getWalletByEmail(user.getUsername());</span>
+<span class="nc" id="L49">        log.debug(&quot;GET /api/wallets/me for email={}&quot;, user.getUsername());</span>
+<span class="nc" id="L50">        return walletService.getWalletByEmail(user.getUsername());</span>
+    }
+
+    /**
+     * GET /api/wallets/me/transactions — paginated transaction history.
+     *
+     * Returns all transfers involving the current user (sent + received),
+     * newest first. Each item shows SENT/RECEIVED relative to the caller.
+     *
+     * Query params:
+     *   page — zero-indexed page number (default 0)
+     *   size — items per page (default 20)
+     */
+    @GetMapping(&quot;/me/transactions&quot;)
+    public ResponseEntity&lt;TransactionHistoryResponse&gt; getTransactionHistory(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @RequestParam(defaultValue = &quot;20&quot;) int size) {
+
+<span class="nc" id="L69">        log.debug(&quot;GET /api/wallets/me/transactions for email={} page={} size={}&quot;,</span>
+<span class="nc" id="L70">                userDetails.getUsername(), page, size);</span>
+
+<span class="nc" id="L72">        TransactionHistoryResponse history = walletService.getTransactionHistory(</span>
+<span class="nc" id="L73">                userDetails.getUsername(), page, size);</span>
+
+<span class="nc" id="L75">        return ResponseEntity.ok(history);</span>
     }
 
     /**
@@ -56,9 +84,9 @@ public class WalletController {
             @AuthenticationPrincipal UserDetails user,
             @Valid @RequestBody AddMoneyRequest request) {
 
-<span class="fc" id="L59">        log.debug(&quot;POST /api/wallets/add-money for email={} amount={}&quot;,</span>
-<span class="fc" id="L60">                user.getUsername(), request.getAmount());</span>
-<span class="fc" id="L61">        return walletService.addMoney(user.getUsername(), request);</span>
+<span class="fc" id="L87">        log.debug(&quot;POST /api/wallets/add-money for email={} amount={}&quot;,</span>
+<span class="fc" id="L88">                user.getUsername(), request.getAmount());</span>
+<span class="fc" id="L89">        return walletService.addMoney(user.getUsername(), request);</span>
     }
 
     /**
@@ -78,18 +106,15 @@ public class WalletController {
             @RequestHeader(value = &quot;Idempotency-Key&quot;, required = false) String idempotencyKey,
             @Valid @RequestBody TransferRequest request) {
 
-        // Validate header presence ourselves so we can return a clean error.
-        // (Using required=true would return Spring's generic 400 &quot;Missing header&quot; message;
-        //  required=false + manual check lets us throw our own exception with our envelope.)
-<span class="pc bpc" id="L84" title="2 of 4 branches missed.">        if (idempotencyKey == null || idempotencyKey.isBlank()) {</span>
-<span class="nc" id="L85">            throw new IdempotencyKeyMissingException();</span>
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">        if (idempotencyKey == null || idempotencyKey.isBlank()) {</span>
+<span class="nc" id="L110">            throw new IdempotencyKeyMissingException();</span>
         }
 
-<span class="fc" id="L88">        log.debug(&quot;POST /api/wallets/transfer sender={} recipient={} amount={} idempotencyKey={}&quot;,</span>
-<span class="fc" id="L89">                sender.getUsername(), request.getRecipientEmail(),</span>
-<span class="fc" id="L90">                request.getAmount(), idempotencyKey);</span>
+<span class="fc" id="L113">        log.debug(&quot;POST /api/wallets/transfer sender={} recipient={} amount={} idempotencyKey={}&quot;,</span>
+<span class="fc" id="L114">                sender.getUsername(), request.getRecipientEmail(),</span>
+<span class="fc" id="L115">                request.getAmount(), idempotencyKey);</span>
 
-<span class="fc" id="L92">        return transferService.transfer(idempotencyKey, sender.getUsername(), request);</span>
+<span class="fc" id="L117">        return transferService.transfer(idempotencyKey, sender.getUsername(), request);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

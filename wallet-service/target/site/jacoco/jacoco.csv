@@ -13,11 +13,12 @@ wallet-service,com.paylite.wallet.exception,InvalidCredentialsException,4,0,0,0,
 wallet-service,com.paylite.wallet.exception,SelfTransferException,0,4,0,0,0,2,0,1,0,1
 wallet-service,com.paylite.wallet.exception,InsufficientBalanceException,0,15,0,0,0,2,0,1,0,1
 wallet-service,com.paylite.wallet.exception,EmailAlreadyExistsException,0,5,0,0,0,2,0,1,0,1
-wallet-service,com.paylite.wallet.controller,WalletController,15,55,2,2,3,9,3,3,1,3
+wallet-service,com.paylite.wallet.controller,WalletController,46,55,2,2,8,9,4,3,2,3
 wallet-service,com.paylite.wallet.controller,AuthController,0,24,0,0,0,5,0,3,0,3
 wallet-service,com.paylite.wallet.dto,UserResponse,0,18,0,0,0,7,0,1,0,1
+wallet-service,com.paylite.wallet.dto,TransactionItemResponse,45,0,4,0,12,0,3,0,1,0
 wallet-service,com.paylite.wallet.service,IdempotencyService,66,87,6,4,16,20,5,6,1,5
-wallet-service,com.paylite.wallet.service,WalletService,0,75,0,0,0,17,0,6,0,6
+wallet-service,com.paylite.wallet.service,WalletService,87,75,0,0,16,17,3,6,3,6
 wallet-service,com.paylite.wallet.service,TransferService,6,198,0,4,0,40,1,9,1,7
 wallet-service,com.paylite.wallet.service,AuthService,18,59,0,0,3,17,1,2,1,2
 wallet-service,com.paylite.wallet.service,UserService,0,74,0,2,0,20,0,3,0,2

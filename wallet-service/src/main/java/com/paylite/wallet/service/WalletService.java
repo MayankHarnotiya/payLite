@@ -1,18 +1,29 @@
 package com.paylite.wallet.service;
 
 import com.paylite.wallet.dto.AddMoneyRequest;
+import com.paylite.wallet.dto.TransactionHistoryResponse;
+import com.paylite.wallet.dto.TransactionItemResponse;
 import com.paylite.wallet.dto.WalletResponse;
+import com.paylite.wallet.entity.Transaction;
+import com.paylite.wallet.entity.User;
 import com.paylite.wallet.entity.Wallet;
 import com.paylite.wallet.exception.WalletNotFoundException;
+import com.paylite.wallet.repository.TransactionRepository;
+import com.paylite.wallet.repository.UserRepository;
 import com.paylite.wallet.repository.WalletRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Business logic for wallet operations.
@@ -26,6 +37,8 @@ import java.math.BigDecimal;
 public class WalletService {
 
     private final WalletRepository walletRepository;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository;
 
     /**
      * Read the current user's wallet. Read-only transaction = small Hibernate perf boost.
@@ -51,7 +64,7 @@ public class WalletService {
      *      WHERE id=? AND version=? (optimistic lock check)
      *
      * If another transaction modified this wallet in parallel, the version check
-     * would fail → OptimisticLockException. We'll handle that gracefully in Day 7.
+     * would fail → OptimisticLockException.
      */
     @Transactional
     public WalletResponse addMoney(String email, AddMoneyRequest request) {
@@ -68,6 +81,38 @@ public class WalletService {
 
         log.info("Wallet credited: email={} newBalance={}", email, newBalance);
         return toResponse(wallet);
+    }
+
+    /**
+     * Returns the paginated transaction history for the given user.
+     * Includes both sent and received transactions, newest first.
+     *
+     * The findUserHistory query uses JOIN FETCH on sender + recipient
+     * to avoid N+1 queries when building the response DTOs.
+     */
+    @Transactional(readOnly = true)
+    public TransactionHistoryResponse getTransactionHistory(String email, int page, int size) {
+        log.info("Fetching transaction history: email={} page={} size={}", email, page, size);
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new WalletNotFoundException(email));
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Transaction> txnPage = transactionRepository.findUserHistory(user, pageable);
+
+        List<TransactionItemResponse> items = txnPage.getContent().stream()
+                .map(txn -> TransactionItemResponse.from(txn, user))
+                .toList();
+
+        log.info("Transaction history fetched: email={} totalElements={}", email, txnPage.getTotalElements());
+
+        return TransactionHistoryResponse.builder()
+                .content(items)
+                .page(txnPage.getNumber())
+                .size(txnPage.getSize())
+                .totalElements(txnPage.getTotalElements())
+                .totalPages(txnPage.getTotalPages())
+                .build();
     }
 
     /**
