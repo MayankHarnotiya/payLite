@@ -16,17 +16,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-/**
- * Spring Security configuration for PayLite.
- *
- * Strategy:
- *   - Stateless (no HTTP sessions) — REST APIs use JWT instead.
- *   - Public endpoints: /api/auth/** and /actuator/**.
- *   - Every other endpoint requires authentication.
- *   - Our JwtAuthenticationFilter runs BEFORE Spring's
- *     UsernamePasswordAuthenticationFilter to populate SecurityContext from JWT.
- */
+import java.util.List;
+
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
@@ -35,35 +30,40 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-<span class="fc" id="L38">        http</span>
-                // CSRF is for browser sessions with cookies. Stateless REST APIs don't need it.
-<span class="fc" id="L40">                .csrf(AbstractHttpConfigurer::disable)</span>
-
-                // No HTTP sessions. Each request must carry its own credentials (JWT).
-<span class="fc" id="L43">                .sessionManagement(session -&gt; session</span>
-<span class="fc" id="L44">                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
+<span class="fc" id="L33">        http</span>
+<span class="fc" id="L34">                .cors(cors -&gt; {})</span>
+<span class="fc" id="L35">                .csrf(AbstractHttpConfigurer::disable)</span>
+<span class="fc" id="L36">                .sessionManagement(session -&gt; session</span>
+<span class="fc" id="L37">                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)</span>
                 )
-
-                // URL rules — order matters: most specific first.
-<span class="fc" id="L48">                .authorizeHttpRequests(auth -&gt; auth</span>
-<span class="fc" id="L49">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
-<span class="fc" id="L50">                        .requestMatchers(HttpMethod.GET, &quot;/actuator/health&quot;).permitAll()</span>
-<span class="fc" id="L51">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
-<span class="fc" id="L52">                        .anyRequest().authenticated()</span>
+<span class="fc" id="L39">                .authorizeHttpRequests(auth -&gt; auth</span>
+<span class="fc" id="L40">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="fc" id="L41">                        .requestMatchers(HttpMethod.GET, &quot;/actuator/health&quot;).permitAll()</span>
+<span class="fc" id="L42">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
+<span class="fc" id="L43">                        .requestMatchers(&quot;/api/auth/**&quot;).permitAll()</span>
+<span class="fc" id="L44">                        .requestMatchers(&quot;/swagger-ui/**&quot;, &quot;/swagger-ui.html&quot;, &quot;/v3/api-docs/**&quot;).permitAll()</span>
+<span class="fc" id="L45">                        .anyRequest().authenticated()</span>
                 )
+<span class="fc" id="L47">                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
 
-                // Insert our JWT filter BEFORE Spring's username/password filter,
-                // so SecurityContext is populated from JWT before any other auth check.
-<span class="fc" id="L57">                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);</span>
-
-<span class="fc" id="L59">        return http.build();</span>
+<span class="fc" id="L49">        return http.build();</span>
     }
 
-    /**
-     * Expose AuthenticationManager as a bean.
-     * Required by AuthService at login time to verify email + password.
-     * Spring builds this internally based on our CustomUserDetailsService + PasswordEncoder.
-     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+<span class="fc" id="L54">        CorsConfiguration cfg = new CorsConfiguration();</span>
+<span class="fc" id="L55">        cfg.setAllowedOriginPatterns(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L56">        cfg.setAllowedMethods(List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L57">        cfg.setAllowedHeaders(List.of(&quot;*&quot;));</span>
+<span class="fc" id="L58">        cfg.setExposedHeaders(List.of(&quot;Authorization&quot;, &quot;Idempotency-Key&quot;));</span>
+<span class="fc" id="L59">        cfg.setAllowCredentials(true);</span>
+<span class="fc" id="L60">        cfg.setMaxAge(3600L);</span>
+
+<span class="fc" id="L62">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L63">        source.registerCorsConfiguration(&quot;/**&quot;, cfg);</span>
+<span class="fc" id="L64">        return source;</span>
+    }
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 <span class="fc" id="L69">        return config.getAuthenticationManager();</span>
