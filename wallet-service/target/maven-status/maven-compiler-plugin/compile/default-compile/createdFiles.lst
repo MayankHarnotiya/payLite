@@ -45,6 +45,7 @@ com\paylite\wallet\repository\UserRepository.class
 com\paylite\wallet\service\WalletService.class
 com\paylite\wallet\entity\Wallet.class
 com\paylite\wallet\dto\TransferResponse.class
+com\paylite\wallet\config\OpenApiConfig.class
 com\paylite\wallet\entity\Transaction.class
 com\paylite\wallet\entity\User$UserBuilder.class
 com\paylite\wallet\service\TransferService.class
