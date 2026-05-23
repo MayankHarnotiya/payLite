@@ -1,0 +1,7 @@
+.git
+.gitignore
+docker-compose.yml
+docs/
+*.md
+wallet-service/target/
+wallet-service/src/test/
