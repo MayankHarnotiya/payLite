@@ -1,0 +1,14 @@
+# Exclude vendored frontend assets from language detection
+*.html linguist-vendored
+*.css linguist-vendored
+src/main/resources/static/** linguist-vendored
+src/main/resources/templates/** linguist-vendored
+
+# Exclude build artifacts and generated reports
+target/** linguist-generated
+build/** linguist-generated
+**/jacoco/** linguist-generated
+**/surefire-reports/** linguist-generated
+
+# Make sure Java is counted normally
+*.java linguist-detectable=true
