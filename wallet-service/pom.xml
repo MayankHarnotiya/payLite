@@ -141,6 +141,19 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <!-- Kafka producer — publish transfer-completed events -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+
+        <!-- Shared event DTOs (same JSON shape as notification-service) -->
+        <dependency>
+            <groupId>com.paylite</groupId>
+            <artifactId>paylite-events</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <!-- =============================================================
@@ -154,6 +167,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <skip>false</skip>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

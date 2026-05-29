@@ -1,7 +1,9 @@
 package com.paylite.wallet.service;
 
+import com.paylite.events.TransferCompletedEvent;
 import com.paylite.wallet.dto.TransferRequest;
 import com.paylite.wallet.dto.TransferResponse;
+import com.paylite.wallet.messaging.TransferEventPublisher;
 import com.paylite.wallet.entity.Transaction;
 import com.paylite.wallet.entity.User;
 import com.paylite.wallet.entity.Wallet;
@@ -16,11 +18,13 @@ import com.paylite.wallet.repository.WalletRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Orchestrates the full money transfer flow with idempotency, atomicity,
@@ -46,6 +50,7 @@ public class TransferService {
     private final TransactionRepository transactionRepository;
     private final IdempotencyService idempotencyService;
     private final TransactionTemplate transactionTemplate;
+    private final ObjectProvider<TransferEventPublisher> transferEventPublisher;
 
     /**
      * Public entry point — wraps the operation in idempotency logic.
@@ -64,9 +69,30 @@ public class TransferService {
         return idempotencyService.executeIdempotent(
                 idempotencyKey,
                 TransferResponse.class,
-                () -> transactionTemplate.execute(status ->
-                        performTransfer(idempotencyKey, senderEmail, request))
+                () -> {
+                    TransferResponse response = transactionTemplate.execute(status ->
+                            performTransfer(idempotencyKey, senderEmail, request));
+
+                    // Publish only after DB commit (TransactionTemplate finished successfully).
+                    // ObjectProvider is empty when paylite.kafka.enabled=false (tests).
+                    transferEventPublisher.ifAvailable(publisher ->
+                            publisher.publish(toEvent(response, idempotencyKey)));
+
+                    return response;
+                }
         );
+    }
+
+    private static TransferCompletedEvent toEvent(TransferResponse response, String idempotencyKey) {
+        return TransferCompletedEvent.builder()
+                .transactionId(response.getTransactionId())
+                .senderEmail(response.getSenderEmail())
+                .recipientEmail(response.getRecipientEmail())
+                .amount(response.getAmount())
+                .currency(response.getCurrency())
+                .idempotencyKey(idempotencyKey)
+                .completedAt(response.getCompletedAt().atZone(ZoneOffset.UTC).toInstant())
+                .build();
     }
 
     /**

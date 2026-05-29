@@ -50,8 +50,20 @@ logging:
     com.paylite: ${LOG_LEVEL:DEBUG}
     org.hibernate.SQL: ${LOG_LEVEL_SQL:DEBUG}
 
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+
 paylite:
   jwt:
     secret: ${PAYLITE_JWT_SECRET:Tqk6ZTIA+54x7c9lf/Sl/io2Sfl54qUgtn+30uKnRH9e3+0krLZbozJP6EcXjr3HggSbgmgXY1nGPoHVdMbs/w==}
     expiration-ms: ${PAYLITE_JWT_EXPIRATION_MS:900000}
     issuer: paylite-wallet-service
+  kafka:
+    enabled: ${PAYLITE_KAFKA_ENABLED:true}
+    topic:
+      transfer-completed: paylite.transfer.completed

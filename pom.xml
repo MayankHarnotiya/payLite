@@ -40,7 +40,9 @@
          in a few weeks.
          ============================================================= -->
     <modules>
+        <module>paylite-events</module>
         <module>wallet-service</module>
+        <module>notification-service</module>
     </modules>
 
     <!-- =============================================================
@@ -54,5 +56,33 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <!--
+      Parent is packaging=pom (no main class). Skip spring-boot:run here so
+      "mvn -pl wallet-service -am spring-boot:run" does not fail on paylite-parent.
+      Runnable modules set spring-boot-maven-plugin.configuration.skip=false.
+    -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -10,6 +10,10 @@ spring:
       hibernate:
         format_sql: false
 
+paylite:
+  kafka:
+    enabled: false
+
 logging:
   level:
     org.hibernate.SQL: WARN

@@ -21,8 +21,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import com.paylite.wallet.messaging.TransferEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -55,6 +58,7 @@ class TransferServiceTest {
     @Mock private TransactionRepository transactionRepository;
     @Mock private IdempotencyService idempotencyService;
     @Mock private TransactionTemplate transactionTemplate;
+    @Mock private ObjectProvider<TransferEventPublisher> transferEventPublisher;
 
     @InjectMocks
     private TransferService transferService;
