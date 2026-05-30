@@ -1,10 +1,6 @@
 import type { HTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-/**
- * Animated placeholder block used while data loads.
- * Compose several to mirror the shape of the real content.
- */
 export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
@@ -17,7 +13,6 @@ export function Skeleton({ className, ...props }: HTMLAttributes<HTMLDivElement>
   )
 }
 
-/** Skeleton shaped like a single transaction row. */
 export function TransactionRowSkeleton() {
   return (
     <div className="flex items-center gap-4 py-4">

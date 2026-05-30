@@ -1,106 +1,163 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Shield, Sparkles, Zap } from 'lucide-react'
+import { ArrowRight, Cpu, Layers, Shield, Sparkles, Wallet, Zap } from 'lucide-react'
+import { lazy, Suspense } from 'react'
+import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/Button'
+import { GradientText } from '@/components/ui/PageHeader'
+import { StaggerContainer, StaggerItem } from '@/components/motion/AnimatedPage'
+
+const HeroScene3D = lazy(() =>
+  import('@/components/three/HeroScene3D').then((m) => ({ default: m.HeroScene3D })),
+)
+
+const techStack = ['React 19', 'TypeScript', 'Three.js', 'Spring Boot', 'Kafka', 'TanStack Query']
 
 const features = [
   {
     icon: Zap,
-    title: 'Instant transfers',
-    description: 'Send money to any PayLite user in seconds with idempotent, retry-safe APIs.',
+    title: 'Instant P2P transfers',
+    description: 'Sub-second transfers with Stripe-style idempotency keys — safe to retry on network failure.',
+    gradient: 'from-amber-500/20 to-orange-500/5',
   },
   {
     icon: Shield,
-    title: 'Bank-grade security',
-    description: 'JWT authentication, BCrypt passwords, and optimistic locking on every wallet.',
+    title: 'Production-grade security',
+    description: 'JWT auth, BCrypt hashing, optimistic locking, and Redis-backed deduplication.',
+    gradient: 'from-emerald-500/20 to-teal-500/5',
   },
   {
-    icon: Sparkles,
-    title: 'Built for demos',
-    description: 'Production Spring Boot backend with a modern React client — portfolio ready.',
+    icon: Layers,
+    title: 'Event-driven architecture',
+    description: 'Kafka notifications decouple wallet API from side effects — microservices ready.',
+    gradient: 'from-cyan-500/20 to-blue-500/5',
   },
-]
-
-const stats = [
-  { value: '< 1s', label: 'Transfer latency' },
-  { value: '100%', label: 'Idempotent APIs' },
-  { value: '24/7', label: 'Real-time updates' },
+  {
+    icon: Cpu,
+    title: 'Full-stack portfolio',
+    description: 'AWS-deployed backend + this React client — built to stand out in 2026 job interviews.',
+    gradient: 'from-violet-500/20 to-purple-500/5',
+  },
 ]
 
 export function LandingPage() {
   return (
-    <div className="gradient-mesh min-h-screen">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-6 sm:px-6">
-        <div className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
-          <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">P</span>
-          PayLite
-        </div>
-        <div className="flex items-center gap-3">
+    <div className="relative min-h-screen overflow-x-hidden bg-surface-950 text-slate-100">
+      <div className="pointer-events-none absolute inset-0 aurora-bg" />
+      <div className="pointer-events-none absolute inset-0 noise-overlay opacity-[0.035]" />
+
+      <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6">
+        <Link to="/" className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg shadow-emerald-500/30">
+            <Wallet className="h-5 w-5" />
+          </span>
+          <span className="font-display text-xl font-bold">PayLite</span>
+        </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link to="/login">
-            <Button variant="ghost">Sign in</Button>
+            <Button variant="ghost" className="text-slate-300 hover:text-white">
+              Sign in
+            </Button>
           </Link>
           <Link to="/register">
-            <Button>Get started</Button>
+            <Button className="btn-glow hidden sm:inline-flex">Get started</Button>
+            <Button className="btn-glow sm:hidden" size="sm">
+              Start
+            </Button>
           </Link>
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 pb-20 pt-8 sm:px-6 sm:pt-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-4 py-1.5 text-sm font-medium text-brand-800 dark:border-brand-800 dark:bg-brand-950/50 dark:text-brand-300">
-            <Sparkles className="h-4 w-4" />
-            Digital wallet for the modern web
-          </p>
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl dark:text-white">
-            Send money.
-            <span className="block text-brand-600">Without the friction.</span>
-          </h1>
-          <p className="mt-6 text-lg text-slate-600 dark:text-slate-400">
-            PayLite is a full-stack fintech demo — Spring Boot API, JWT auth, P2P transfers, and
-            transaction history in a responsive React experience.
-          </p>
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link to="/register">
-              <Button size="lg" className="min-w-[180px]">
-                Create free account
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/login">
-              <Button variant="secondary" size="lg" className="min-w-[180px]">
-                I have an account
-              </Button>
-            </Link>
-          </div>
-        </div>
+      <main className="relative z-10 mx-auto max-w-7xl px-4 pb-24 pt-4 sm:px-6 sm:pt-8">
+        <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-8">
+          <motion.div
+            initial={{ opacity: 0, x: -24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-medium text-emerald-300">
+              <Sparkles className="h-4 w-4" />
+              Full-stack fintech · Portfolio 2026
+            </p>
 
-        <div className="mt-16 grid grid-cols-3 gap-4">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="text-2xl font-bold text-slate-900 sm:text-3xl dark:text-white">
-                {s.value}
-              </p>
-              <p className="mt-1 text-xs text-slate-500 sm:text-sm">{s.label}</p>
+            <h1 className="font-display text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl xl:text-6xl">
+              Move money
+              <span className="block">
+                at the <GradientText>speed of now</GradientText>
+              </span>
+            </h1>
+
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-slate-400">
+              A premium digital wallet experience powered by Spring Boot, Kafka, and React Three Fiber —
+              designed to impress recruiters and users alike.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-2">
+              {techStack.map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-400"
+                >
+                  {t}
+                </span>
+              ))}
             </div>
-          ))}
+
+            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+              <Link to="/register">
+                <Button size="lg" className="btn-glow min-w-[200px]">
+                  Open your wallet
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button variant="secondary" size="lg" className="min-w-[200px] border-white/10 bg-white/5 text-white hover:bg-white/10">
+                  Sign in
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+            className="relative"
+          >
+            <div className="glow-border animate-float overflow-hidden rounded-3xl">
+              <Suspense
+                fallback={
+                  <div className="flex h-[320px] items-center justify-center rounded-3xl bg-emerald-500/10 sm:h-[420px] lg:h-[520px]">
+                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-emerald-400 border-t-transparent" />
+                  </div>
+                }
+              >
+                <HeroScene3D />
+              </Suspense>
+            </div>
+          </motion.div>
         </div>
 
-        <div className="mt-16 grid gap-6 sm:grid-cols-3">
-          {features.map(({ icon: Icon, title, description }) => (
-            <div key={title} className="glass rounded-2xl p-6">
-              <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
-                <Icon className="h-5 w-5" />
+        <StaggerContainer className="mt-24 grid gap-5 sm:grid-cols-2">
+          {features.map(({ icon: Icon, title, description, gradient }) => (
+            <StaggerItem key={title}>
+              <div
+                className={`group glow-border rounded-2xl bg-gradient-to-br ${gradient} p-6 transition-transform hover:scale-[1.02]`}
+              >
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 text-emerald-300 ring-1 ring-white/10 transition group-hover:bg-emerald-500/20">
+                  <Icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-display text-lg font-bold text-white">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-slate-400">{description}</p>
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{description}</p>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </main>
 
-      <footer className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-200/70 pt-6 text-sm text-slate-500 sm:flex-row dark:border-slate-800">
-          <p>© {new Date().getFullYear()} PayLite — a full-stack fintech demo.</p>
-          <p>Spring Boot · Kafka · React · TypeScript</p>
+      <footer className="relative z-10 border-t border-white/5 py-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-4 text-sm text-slate-500 sm:flex-row sm:px-6">
+          <p>© {new Date().getFullYear()} PayLite — Mayank Harnotiya</p>
+          <p>Spring Boot · Kafka · React · Three.js · AWS</p>
         </div>
       </footer>
     </div>

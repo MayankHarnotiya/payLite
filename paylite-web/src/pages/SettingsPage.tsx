@@ -7,6 +7,8 @@ import { formatDateTime } from '@/lib/format'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Avatar } from '@/components/ui/Avatar'
+import { AnimatedPage } from '@/components/motion/AnimatedPage'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 function Field({
   icon: Icon,
@@ -56,11 +58,8 @@ export function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl dark:text-white">Settings</h1>
-        <p className="mt-1 text-slate-500">Manage your account and preferences</p>
-      </div>
+    <AnimatedPage className="mx-auto max-w-2xl space-y-6">
+      <PageHeader title="Settings" subtitle="Manage your account and preferences" />
 
       <Card>
         <div className="flex items-center gap-4">
@@ -132,6 +131,6 @@ export function SettingsPage() {
           </Button>
         </div>
       </Card>
-    </div>
+    </AnimatedPage>
   )
 }

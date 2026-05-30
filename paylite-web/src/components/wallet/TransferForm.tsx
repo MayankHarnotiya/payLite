@@ -48,7 +48,6 @@ export function TransferForm({
         crypto.randomUUID(),
       ),
     onSuccess: (result) => {
-      // Optimistically reflect the new balance immediately, then revalidate.
       queryClient.setQueryData<Wallet>(walletKeys.wallet, (prev) =>
         prev ? { ...prev, balance: result.newSenderBalance } : prev,
       )

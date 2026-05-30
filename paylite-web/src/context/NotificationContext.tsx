@@ -14,11 +14,9 @@ export interface AppNotification {
   id: string
   title: string
   body: string
-  /** Visual accent + icon hint. */
   kind: 'transfer-in' | 'transfer-out' | 'system'
   createdAt: string
   read: boolean
-  /** Optional deep-link target within the app. */
   href?: string
 }
 
@@ -58,15 +56,12 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     key ? load(key) : [],
   )
 
-  // Reload (and switch) the feed when the signed-in user changes. Adjusting
-  // state during render — React's recommended alternative to a setState effect.
   const prevKey = useRef(key)
   if (prevKey.current !== key) {
     prevKey.current = key
     setNotifications(key ? load(key) : [])
   }
 
-  // Persist on every change for the current user.
   useEffect(() => {
     if (key) localStorage.setItem(key, JSON.stringify(notifications))
   }, [key, notifications])

@@ -11,30 +11,15 @@ function lastSeenKey(userId: number | string): string {
   return `paylite_last_seen_tx_${userId}`
 }
 
-/**
- * Frontend "real-time" layer.
- *
- * The backend emits Kafka `TransferCompletedEvent`s, but browsers can't read
- * Kafka directly. Until a WebSocket/SSE bridge exists on the server, we poll
- * the recent-transactions feed while the tab is visible and surface any newly
- * *received* transfer as a toast + a persisted notification.
- *
- * First load establishes a baseline (the newest known id) so we never replay
- * historical transfers as "new" notifications.
- *
- * Mount once inside the authenticated shell.
- */
 export function useTransferWatcher() {
   const { user } = useAuth()
   const { notify } = useNotifications()
   const { data } = useTransactions(0, 10, POLL_MS)
 
-  // Highest transactionId we've already accounted for. Persisted per user so a
-  // page reload doesn't re-notify for transfers seen in a previous session.
   const lastSeenId = useRef<number | null>(null)
 
   useEffect(() => {
-    lastSeenId.current = null // reset baseline when the user changes
+    lastSeenId.current = null
   }, [user?.id])
 
   useEffect(() => {
@@ -44,8 +29,6 @@ export function useTransferWatcher() {
 
     const maxId = Math.max(...items.map((t) => t.transactionId))
 
-    // Establish baseline on first observation (prefer a value persisted from a
-    // previous session so cross-reload transfers still notify once).
     if (lastSeenId.current === null) {
       const stored = Number(localStorage.getItem(lastSeenKey(user.id)))
       lastSeenId.current = Number.isFinite(stored) && stored > 0 ? stored : maxId

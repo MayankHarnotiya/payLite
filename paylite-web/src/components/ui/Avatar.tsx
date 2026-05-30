@@ -16,7 +16,6 @@ function initials(name: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-/** Deterministic colored initials avatar derived from a name/email seed. */
 export function Avatar({
   name,
   seed,

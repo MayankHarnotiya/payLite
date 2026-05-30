@@ -12,9 +12,9 @@ import { Input } from '@/components/ui/Input'
 import { Alert } from '@/components/ui/Alert'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { cn } from '@/lib/utils'
+import { AnimatedPage } from '@/components/motion/AnimatedPage'
+import { PageHeader } from '@/components/ui/PageHeader'
 
-// Backend has no server-side search/filter, so we pull a generous window and
-// filter on the client. Plenty for a demo wallet; swap for query params later.
 const FETCH_SIZE = 100
 const PAGE_SIZE = 10
 
@@ -56,7 +56,6 @@ export function HistoryPage() {
     return sorted
   }, [all, filter, debouncedSearch, sort])
 
-  // Reset to first page whenever the result set changes shape.
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const safePage = Math.min(page, totalPages - 1)
   const pageItems = filtered.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
@@ -64,23 +63,20 @@ export function HistoryPage() {
   const resetPage = () => setPage(0)
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl dark:text-white">
-          Transaction history
-        </h1>
-        <p className="mt-1 text-slate-500">
-          {all.length > 0
+    <AnimatedPage className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Transaction history"
+        subtitle={
+          all.length > 0
             ? `${filtered.length} of ${all.length} transaction${all.length === 1 ? '' : 's'}`
-            : 'All sent and received transfers'}
-        </p>
-      </div>
+            : 'All sent and received transfers'
+        }
+      />
 
       {query.isError && (
         <Alert variant="error">Could not load transactions. Please try again.</Alert>
       )}
 
-      {/* Filter bar */}
       <Card padding="md" className="space-y-4">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -177,6 +173,6 @@ export function HistoryPage() {
         onClose={() => setSelected(null)}
         onSendAgain={(email) => navigate('/transfer', { state: { recipient: email } })}
       />
-    </div>
+    </AnimatedPage>
   )
 }

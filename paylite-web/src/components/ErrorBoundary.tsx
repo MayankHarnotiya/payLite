@@ -10,10 +10,6 @@ interface State {
   error: Error | null
 }
 
-/**
- * Catches render-time errors so a single broken screen never blanks the app.
- * In production this is where you'd report to Sentry/your error pipeline.
- */
 export class ErrorBoundary extends Component<Props, State> {
   state: State = { error: null }
 

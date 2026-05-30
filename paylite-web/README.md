@@ -36,16 +36,21 @@ Open http://localhost:5173 — Vite proxies `/api` to http://localhost:8081.
 
 ## Production API
 
-Create `.env`:
+**Live app:** https://paylite-web.vercel.app
 
-```env
-VITE_API_URL=https://your-eb-url.elasticbeanstalk.com
-```
+The frontend is deployed on Vercel. API calls use `/api/...` on the same origin — Vercel rewrites those requests to Elastic Beanstalk (see `vercel.json`). This avoids mixed-content issues because the EB URL is HTTP-only.
 
-Build:
+Leave `VITE_API_URL` empty in production (default). Vite dev proxy handles local; Vercel rewrites handle prod.
+
+## Deploy to Vercel
+
+From `paylite-web`:
 
 ```bash
-npm run build
+npm run build          # optional local check
+npx vercel deploy --prod
 ```
 
-Deploy `dist/` to Vercel, Netlify, or S3 + CloudFront.
+First-time setup links the folder to [Vercel](https://vercel.com). Connect your GitHub repo in the Vercel dashboard (root directory: `paylite-web`) for automatic deploys on push.
+
+If you add HTTPS to the backend later, you can set `VITE_API_URL` in Vercel environment variables and remove the `/api` rewrite.

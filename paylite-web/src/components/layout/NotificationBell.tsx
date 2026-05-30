@@ -23,7 +23,6 @@ export function NotificationBell() {
   const ref = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
 
-  // Close on outside click / Escape.
   useEffect(() => {
     if (!open) return
     const onClick = (e: MouseEvent) => {

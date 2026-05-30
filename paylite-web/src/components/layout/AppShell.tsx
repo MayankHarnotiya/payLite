@@ -39,12 +39,12 @@ function SidebarContent({ user, theme, onToggleTheme, onLogout, onNavigate }: Si
   return (
     <>
       <div className="mb-8 flex items-center gap-3 px-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-white shadow-lg shadow-brand-600/30">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-600/30">
           <Wallet className="h-5 w-5" />
         </div>
         <div>
-          <p className="font-bold text-slate-900 dark:text-white">PayLite</p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Digital wallet</p>
+          <p className="font-display font-bold text-white">PayLite</p>
+          <p className="text-xs text-slate-400">Digital wallet</p>
         </div>
       </div>
 
@@ -56,10 +56,10 @@ function SidebarContent({ user, theme, onToggleTheme, onLogout, onNavigate }: Si
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
-                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
                 isActive
-                  ? 'bg-brand-600 text-white shadow-md shadow-brand-600/20'
-                  : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800',
+                  ? 'bg-gradient-to-r from-emerald-600/90 to-teal-600/90 text-white shadow-md shadow-emerald-900/30'
+                  : 'text-slate-400 hover:bg-white/5 hover:text-white',
               )
             }
           >
@@ -69,18 +69,18 @@ function SidebarContent({ user, theme, onToggleTheme, onLogout, onNavigate }: Si
         ))}
       </nav>
 
-      <div className="mt-auto space-y-3 border-t border-slate-200 pt-4 dark:border-slate-800">
+      <div className="mt-auto space-y-3 border-t border-white/10 pt-4">
         <NavLink
           to="/settings"
           onClick={onNavigate}
-          className="flex items-center gap-3 rounded-xl bg-slate-100 px-3 py-2.5 transition-colors hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800"
+          className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5 transition-colors hover:bg-white/10"
         >
           <Avatar name={user?.fullName ?? '?'} seed={user?.email} className="h-9 w-9" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-slate-900 dark:text-white">
+            <p className="truncate text-sm font-medium text-white">
               {user?.fullName}
             </p>
-            <p className="truncate text-xs text-slate-500">{user?.email}</p>
+            <p className="truncate text-xs text-slate-400">{user?.email}</p>
           </div>
         </NavLink>
         <Button variant="ghost" className="w-full justify-start" onClick={onToggleTheme}>
@@ -102,7 +102,6 @@ export function AppShell() {
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  // Frontend real-time layer: surfaces incoming transfers as toasts + bell items.
   useTransferWatcher()
 
   const handleLogout = () => {
@@ -121,15 +120,18 @@ export function AppShell() {
   )
 
   return (
-    <div className="min-h-screen lg:flex">
-      <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white/80 p-4 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 lg:flex lg:flex-col">
+    <div className="relative min-h-screen lg:flex">
+      <div className="pointer-events-none fixed inset-0 aurora-bg opacity-60" />
+      <div className="pointer-events-none fixed inset-0 noise-overlay opacity-[0.025]" />
+
+      <aside className="relative z-10 hidden w-64 shrink-0 border-r border-white/5 bg-slate-950/80 p-4 backdrop-blur-xl lg:flex lg:flex-col dark:border-white/5">
         {sidebar}
       </aside>
 
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button type="button" className="absolute inset-0 bg-slate-900/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col bg-white p-4 shadow-xl dark:bg-slate-950">
+          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col bg-slate-950 p-4 shadow-2xl">
             <button
               type="button"
               className="absolute right-3 top-3 rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -142,8 +144,8 @@ export function AppShell() {
         </div>
       )}
 
-      <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+      <div className="relative z-10 flex min-h-screen flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-white/5 bg-slate-950/70 px-4 py-3 backdrop-blur-xl">
           <button
             type="button"
             className="rounded-xl p-2 text-slate-700 hover:bg-slate-100 lg:hidden dark:text-slate-300 dark:hover:bg-slate-800"

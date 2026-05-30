@@ -5,9 +5,9 @@ import { z } from 'zod'
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { getErrorMessage } from '@/lib/errors'
+import { AuthLayout } from '@/components/layout/AuthLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card } from '@/components/ui/Card'
 import { Alert } from '@/components/ui/Alert'
 
 const schema = z.object({
@@ -47,51 +47,44 @@ export function LoginPage() {
   })
 
   return (
-    <div className="gradient-mesh flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
-          <p className="mt-2 text-sm text-slate-500">Sign in to your PayLite wallet</p>
-        </div>
+    <AuthLayout title="Welcome back" subtitle="Sign in to access your PayLite wallet">
+      {sessionExpired && (
+        <Alert variant="info" className="mb-4">
+          Your session expired. Please sign in again.
+        </Alert>
+      )}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
-        {sessionExpired && (
-          <Alert variant="info" className="mb-4">
-            Your session expired. Please sign in again.
-          </Alert>
-        )}
-        {error && (
-          <Alert variant="error" className="mb-4">
-            {error}
-          </Alert>
-        )}
+      <form onSubmit={onSubmit} className="space-y-4">
+        <Input
+          label="Email"
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register('email')}
+        />
+        <Input
+          label="Password"
+          type="password"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register('password')}
+        />
+        <Button type="submit" className="btn-glow w-full" loading={loading}>
+          Sign in
+        </Button>
+      </form>
 
-        <form onSubmit={onSubmit} className="space-y-4">
-          <Input
-            label="Email"
-            type="email"
-            autoComplete="email"
-            error={errors.email?.message}
-            {...register('email')}
-          />
-          <Input
-            label="Password"
-            type="password"
-            autoComplete="current-password"
-            error={errors.password?.message}
-            {...register('password')}
-          />
-          <Button type="submit" className="w-full" loading={loading}>
-            Sign in
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-500">
-          New to PayLite?{' '}
-          <Link to="/register" className="font-semibold text-brand-600 hover:text-brand-500">
-            Create account
-          </Link>
-        </p>
-      </Card>
-    </div>
+      <p className="mt-6 text-center text-sm text-slate-400">
+        New to PayLite?{' '}
+        <Link to="/register" className="font-semibold text-emerald-400 hover:text-emerald-300">
+          Create account
+        </Link>
+      </p>
+    </AuthLayout>
   )
 }
