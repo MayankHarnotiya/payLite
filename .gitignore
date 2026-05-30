@@ -10,3 +10,12 @@ target/
 
 # Personal learning notes — not for the public repo
 docs/LEARNING_JOURNAL.md
+
+# Agent / IDE
+.claude/
+
+# Frontend
+node_modules/
+paylite-web/dist/
+paylite-web/.env
+paylite-web/.env.local
